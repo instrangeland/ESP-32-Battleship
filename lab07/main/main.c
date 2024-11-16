@@ -9,9 +9,7 @@
 #include "pin.h"
 #include "lcd.h"
 #include "nav.h"
-#if MILESTONE == 2
 #include "com.h"
-#endif // MILESTONE
 #include "graphics.h"
 #include "game.h"
 #include "config.h"
@@ -20,7 +18,7 @@
 #define PER_MS ((uint32_t)(CONFIG_GAME_TIMER_PERIOD*1000))
 #define TIME_OUT 500 // ms
 
-static const char *TAG = "lab05";
+static const char *TAG = "lab07";
 
 TimerHandle_t update_timer; // Declare timer handle for update callback
 
