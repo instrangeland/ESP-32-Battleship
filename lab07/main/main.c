@@ -45,9 +45,8 @@ void app_main(void)
 	lcd_init();
 	lcd_fillScreen(CONFIG_BACK_CLR);
 	nav_init(PER_MS);
-#if MILESTONE == 2
+
 	com_init();
-#endif // MILESTONE
 	game_init();
 
 	// Configure I/O pins for buttons

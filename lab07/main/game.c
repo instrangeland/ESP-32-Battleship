@@ -37,3 +37,43 @@ void game_init(void){
     currentState = INIT_STATE;
 }
 
+void game_tick(void){
+    switch(currentState){
+        case INIT_STATE:
+            currentState = NEW_GAME_STATE;
+            break;
+        case NEW_GAME_STATE:
+            break;
+        case PLACE_SHIPS_STATE: 
+            break;
+        case READY_STATE:
+            break;
+        case PLAY_STATE:
+            break;
+        case END_STATE:
+            break;
+        default:
+            break;
+    }
+
+    switch(currentState){
+        case INIT_STATE:
+            break;
+        case NEW_GAME_STATE:
+            lcd_fillScreen(CONFIG_BACK_CLR);
+            graphics_drawGrid(CONFIG_GRID_CLR);
+            board_clear();
+            nav_set_loc(0,0);
+            break;
+        case PLACE_SHIPS_STATE: 
+            break;
+        case READY_STATE:
+            break;
+        case PLAY_STATE:
+            break;
+        case END_STATE:
+            break;
+        default:
+            break;
+    }
+}
