@@ -1,0 +1,7 @@
+#ifndef C1BC6F03_7B43_423D_955E_B705B0780E2F
+#define C1BC6F03_7B43_423D_955E_B705B0780E2F
+#include "coord.h"
+
+coord* get_coordinates() {}
+
+#endif /* C1BC6F03_7B43_423D_955E_B705B0780E2F */
