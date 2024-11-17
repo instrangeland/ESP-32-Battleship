@@ -1,4 +1,4 @@
-set(SOURCE main.c game.c board.c graphics.c nav.c com.c)
+set(SOURCE main.c game.c board.c graphics.c nav.c com.c ship.c coord.c)
 message(STATUS "MILESTONE=${MILESTONE}")
 idf_component_register(SRCS ${SOURCE}
                        INCLUDE_DIRS .
