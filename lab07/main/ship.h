@@ -1,7 +1,22 @@
 #ifndef C1BC6F03_7B43_423D_955E_B705B0780E2F
 #define C1BC6F03_7B43_423D_955E_B705B0780E2F
 #include "coord.h"
+#include <stdbool.h>
 
-coord* get_coordinates() {}
+typedef enum e_orientation {
+    VERTICAL,
+    HORIZONTAL,
+} orientation;
+
+typedef struct ships {
+    bool placed;
+    coord start_coord;
+    coord* coordinates;
+    uint8_t length;
+} ship;
+
+coord* get_coordinates(coord start_coordinate, uint8_t length, orientation direction);
+
+
 
 #endif /* C1BC6F03_7B43_423D_955E_B705B0780E2F */

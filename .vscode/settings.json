@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "tone.h": "c"
+        "tone.h": "c",
+        "coord.h": "c"
     }
 }
