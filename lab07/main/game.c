@@ -38,13 +38,6 @@ SHIP destroyer = {"Destroyer", false, {0, 0}, NULL, 2};
 
 SHIP *ships[] = {&carrier, &battleship, &submarine, &cruiser, &destroyer};
 
-// Define ship sizes
-#define CARRIER_SIZE 5
-#define BATTLESHIP_SIZE 4
-#define SUBMARINE_SIZE 3
-#define CRUISER_SIZE 3
-#define DESTROYER_SIZE 2
-
 // Define bit shift and bit mask options for UART data manipulation.
 #define BIT_SHIFT 4
 #define BIT_MASK 0x0F
@@ -74,6 +67,24 @@ void print_ship(uint8_t ship_num)
     graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
 }
 
+void redraw_ship(coord *coord_to_draw, uint8_t num_coords, color_t color, bool filled)
+{
+    for (int i = 0; i < num_coords; i++)
+    {
+        if (!filled)
+        {
+            graphics_drawHighlight(coord_to_draw[i].row, coord_to_draw[i].col, color);
+        }
+        else
+        {
+            graphics_filldrawHighlight(coord_to_draw[i].row, coord_to_draw[i].col, color);
+        }
+    }
+}
+
+int8_t prev_row,
+    prev_column = 5;
+
 void game_tick(void)
 {
     switch (currentState)
@@ -86,7 +97,8 @@ void game_tick(void)
         print_ship(0);
         break;
     case PLACE_SHIPS_STATE:
-        if (placing_ship >= DESTROYER) {
+        if (placing_ship >= DESTROYER)
+        {
             currentState = READY_STATE;
         }
         break;
@@ -113,37 +125,43 @@ void game_tick(void)
     case PLACE_SHIPS_STATE:
         int8_t row, column;
         nav_get_loc(&row, &column);
-        coord start_coord = {row, column};
+        coord start_coords = {row, column};
         bool checkPlace = false;
-
-        if (!pin_get_level(HW_BTN_B))
+        bool dirty = false;
+        if ((prev_column != column) || (prev_row != row))
         {
+            coord prev_coords = {prev_row, prev_column};
+            redraw_ship(get_coordinates(prev_coords, ships[placing_ship]->length, !rotateShip), ships[placing_ship]->length, CONFIG_BACK_CLR, true);
+            start_coords.row = row;
+            start_coords.col = column;
+            ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
+            redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
+            for (uint8_t cur_ship = 0; cur_ship < 5; cur_ship++)
+            {
+                if (ships[cur_ship]->placed)
+                    redraw_ship(ships[cur_ship]->coordinates, ships[cur_ship]->length, GREEN, true);
+            }
+            prev_column = column;
+            prev_row = row;
+        }
+        else if (!pin_get_level(HW_BTN_B))
+        {
+            redraw_ship(get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip), ships[placing_ship]->length, CONFIG_BACK_CLR, true);
             rotateShip = !rotateShip;
-            while (!pin_get_level(HW_BTN_A)) {}
-        }
-
-        if (!rotateShip)
-        {
-            ships[placing_ship]->coordinates = get_coordinates(start_coord, ships[placing_ship]->length, HORIZONTAL);
-            for (int i = 0; i < CARRIER_SIZE; i++)
+            while (!pin_get_level(HW_BTN_B))
             {
-                graphics_drawHighlight(ships[placing_ship]->coordinates[i].row, ships[placing_ship]->coordinates[i].col, CONFIG_HIGH_CLR);
             }
+            ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
+            redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
         }
-        else
+        else if (!pin_get_level(HW_BTN_A))
         {
-            ships[placing_ship]->coordinates = get_coordinates(start_coord, ships[placing_ship]->length, VERTICAL);
-            for (int i = 0; i < CARRIER_SIZE; i++)
-            {
-                graphics_drawHighlight(ships[placing_ship]->coordinates[i].row, ships[placing_ship]->coordinates[i].col, CONFIG_HIGH_CLR);
-            }
-        }
-        if (!pin_get_level(HW_BTN_A))
-        {
+            ships[placing_ship]->placed = true;
             placing_ship++;
-            checkPlace = true;
             print_ship(placing_ship);
-            while (!pin_get_level(HW_BTN_A)) {}
+            while (!pin_get_level(HW_BTN_A))
+            {
+            }
         }
         break;
     case READY_STATE:

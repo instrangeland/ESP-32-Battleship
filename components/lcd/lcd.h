@@ -20,15 +20,15 @@
 /** @name Standard colors. */
 /** @{ */
 
-#define RED     rgb565(255,   0,   0) // 0xf800
-#define GREEN   rgb565(  0, 255,   0) // 0x07e0
-#define BLUE    rgb565(  0,   0, 255) // 0x001f
-#define BLACK   rgb565(  0,   0,   0) // 0x0000
-#define WHITE   rgb565(255, 255, 255) // 0xffff
-#define GRAY    rgb565(128, 128, 128) // 0x8410
-#define YELLOW  rgb565(255, 255,   0) // 0xFFE0
-#define CYAN    rgb565(  0, 156, 209) // 0x04FA
-#define MAGENTA rgb565(128,   0, 128) // 0x8010
+#define RED rgb565(255, 0, 0)		// 0xf800
+#define GREEN rgb565(0, 255, 0)		// 0x07e0
+#define BLUE rgb565(0, 0, 255)		// 0x001f
+#define BLACK rgb565(0, 0, 0)		// 0x0000
+#define WHITE rgb565(255, 255, 255) // 0xffff
+#define GRAY rgb565(128, 128, 128)	// 0x8410
+#define YELLOW rgb565(255, 255, 0)	// 0xFFE0
+#define CYAN rgb565(0, 156, 209)	// 0x04FA
+#define MAGENTA rgb565(128, 0, 128) // 0x8010
 #define PURPLE MAGENTA
 
 /** @} */
@@ -59,7 +59,8 @@ typedef uint16_t color_t;
 typedef int16_t angle_t;
 
 /** @brief Direction type for font orientation. */
-typedef enum {
+typedef enum
+{
 	DIRECTION0,
 	DIRECTION90,
 	DIRECTION180,
@@ -67,7 +68,8 @@ typedef enum {
 } direction_t;
 
 /** @brief Scroll type for movement of screen image. */
-typedef enum {
+typedef enum
+{
 	SCROLL_RIGHT = 1,
 	SCROLL_LEFT = 2,
 	SCROLL_DOWN = 3,
