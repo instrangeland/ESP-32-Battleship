@@ -82,6 +82,15 @@ void redraw_ship(coord *coord_to_draw, uint8_t num_coords, color_t color, bool f
     }
 }
 
+void redraw_all_ships()
+{
+    for (uint8_t cur_ship = 0; cur_ship < 5; cur_ship++)
+    {
+        if (ships[cur_ship]->placed)
+            redraw_ship(ships[cur_ship]->coordinates, ships[cur_ship]->length, GREEN, true);
+    }
+}
+
 int8_t prev_row,
     prev_column = 5;
 
@@ -99,7 +108,10 @@ void game_tick(void)
     case PLACE_SHIPS_STATE:
         if (placing_ship > 4)
         {
+            lcd_fillScreen(CONFIG_BACK_CLR);
+            graphics_drawGrid(CONFIG_GRID_CLR);
             currentState = READY_STATE;
+            redraw_all_ships();
             graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
         }
         break;
@@ -137,13 +149,9 @@ void game_tick(void)
             start_coords.col = column;
             ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
             redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
-            for (uint8_t cur_ship = 0; cur_ship < 5; cur_ship++)
-            {
-                if (ships[cur_ship]->placed)
-                    redraw_ship(ships[cur_ship]->coordinates, ships[cur_ship]->length, GREEN, true);
-            }
             prev_column = column;
             prev_row = row;
+            redraw_all_ships();
         }
         else if (!pin_get_level(HW_BTN_B))
         {

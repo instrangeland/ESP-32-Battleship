@@ -15,7 +15,7 @@
 #include "config.h"
 
 // The update period as an integer in ms
-#define PER_MS ((uint32_t)(CONFIG_GAME_TIMER_PERIOD*1000))
+#define PER_MS ((uint32_t)(CONFIG_GAME_TIMER_PERIOD * 1000))
 #define TIME_OUT 500 // ms
 
 static const char *TAG = "lab07";
@@ -28,7 +28,8 @@ uint32_t isr_triggered_count;
 uint32_t isr_handled_count;
 
 // Interrupt handler for game - use flag method
-void update() {
+void update()
+{
 	interrupt_flag = true;
 	isr_triggered_count++;
 }
@@ -65,42 +66,38 @@ void app_main(void)
 
 	// Initialize update timer
 	update_timer = xTimerCreate(
-		"update_timer",        // Text name for the timer.
+		"update_timer",		   // Text name for the timer.
 		pdMS_TO_TICKS(PER_MS), // The timer period in ticks.
-		pdTRUE,                // Auto-reload the timer when it expires.
-		NULL,                  // No need for a timer ID.
-		update                 // Function called when timer expires.
+		pdTRUE,				   // Auto-reload the timer when it expires.
+		NULL,				   // No need for a timer ID.
+		update				   // Function called when timer expires.
 	);
-	if (update_timer == NULL) {
+	if (update_timer == NULL)
+	{
 		ESP_LOGE(TAG, "Error creating update timer");
 		return;
 	}
-	if (xTimerStart(update_timer, pdMS_TO_TICKS(TIME_OUT)) != pdPASS) {
+	if (xTimerStart(update_timer, pdMS_TO_TICKS(TIME_OUT)) != pdPASS)
+	{
 		ESP_LOGE(TAG, "Error starting update timer");
 		return;
 	}
 
 	// Main game loop
-	uint64_t t1, t2, tmax = 0; // For hardware timer values
-	int8_t r, c; // For navigator location
+	uint64_t t1, t2, tmax = 0;		   // For hardware timer values
 	while (pin_get_level(HW_BTN_MENU)) // while MENU button not pressed
 	{
-		while (!interrupt_flag) ;
+		while (!interrupt_flag)
+			;
 		t1 = esp_timer_get_time();
 		interrupt_flag = false;
 		isr_handled_count++;
 
 		game_tick();
 		nav_tick();
-		nav_get_loc(&r, &c);
-		static int8_t lr = -1, lc = -1;
-		if (r != lr || c != lc) {
-			graphics_drawHighlight(lr,  lc, CONFIG_BACK_CLR);
-			lr = r; lc = c;
-		}
-		graphics_drawHighlight(r, c, CONFIG_HIGH_CLR);
 		t2 = esp_timer_get_time() - t1;
-		if (t2 > tmax) tmax = t2;
+		if (t2 > tmax)
+			tmax = t2;
 	}
 	printf("Handled %lu of %lu interrupts\n", isr_handled_count, isr_triggered_count);
 	printf("WCET us:%llu\n", tmax);
