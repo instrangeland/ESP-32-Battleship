@@ -91,6 +91,12 @@ void redraw_all_ships()
     }
 }
 
+void draw_invalid_ship(coord *coords_to_draw, uint8_t invalid_starting_at)
+{
+    redraw_ship(coords_to_draw, invalid_starting_at - 1, GREEN, false);
+    graphics_drawX(coords_to_draw[invalid_starting_at].row, coords_to_draw[invalid_starting_at].row, RED);
+}
+
 int8_t prev_row,
     prev_column = 5;
 
@@ -141,6 +147,7 @@ void game_tick(void)
         coord start_coords = {row, column};
         bool checkPlace = false;
         bool dirty = false;
+        // this is dirty
         if ((prev_column != column) || (prev_row != row))
         {
             coord prev_coords = {prev_row, prev_column};
@@ -148,7 +155,14 @@ void game_tick(void)
             start_coords.row = row;
             start_coords.col = column;
             ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
-            redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
+            if (check_coords_free(ships[placing_ship]->coordinates, ships[placing_ship]->length))
+            {
+                redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
+            }
+            else
+            {
+                draw_invalid_ship(ships[placing_ship]->coordinates, find_full_coord(ships[placing_ship]->coordinates, ships[placing_ship]->length));
+            }
             prev_column = column;
             prev_row = row;
             redraw_all_ships();

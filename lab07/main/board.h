@@ -25,6 +25,6 @@ void write_coords(coord *coord_to_write, uint8_t num_coords);
 
 bool check_coords_free(coord *coord_to_write, uint8_t num_coords);
 
-coord *find_full_coord(coord *coord_to_write, uint8_t num_coords);
+uint8_t find_full_coord(coord *coord_to_write, uint8_t num_coords);
 
 #endif // BOARD_H_

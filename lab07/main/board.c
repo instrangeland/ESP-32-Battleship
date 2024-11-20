@@ -48,14 +48,14 @@ bool check_coords_free(coord *coord_to_write, uint8_t num_coords)
 	}
 	return true;
 }
-
-coord *find_full_coord(coord *coord_to_write, uint8_t num_coords)
+// returns the index of the first invalid coord.
+uint8_t find_full_coord(coord *coord_to_write, uint8_t num_coords)
 {
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
 	{
 		if (board[coord_to_write[ship_num].row][coord_to_write[ship_num].col])
 		{
-			return board[coord_to_write[ship_num].row][coord_to_write[ship_num].col];
+			return ship_num;
 		}
 	}
 	return NULL;
