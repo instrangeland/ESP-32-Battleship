@@ -10,10 +10,33 @@
 #include "hw.h"
 #include "ship.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 // Define enums for the game state machine and to manage place ships
-enum GAME_CNTRL_STATE {INIT_STATE, NEW_GAME_STATE, PLACE_SHIPS_STATE, READY_STATE, PLAY_STATE, END_STATE}; 
-enum SHIP_TYPE {CARRIER, BATTLESHIP, SUBMARINE, CRUISER, DESTROYER};
+enum GAME_CNTRL_STATE
+{
+    INIT_STATE,
+    NEW_GAME_STATE,
+    PLACE_SHIPS_STATE,
+    READY_STATE,
+    PLAY_STATE,
+    END_STATE
+};
+enum SHIP_TYPE
+{
+    CARRIER = 0,
+    BATTLESHIP = 1,
+    SUBMARINE = 2,
+    CRUISER = 3,
+    DESTROYER = 4,
+};
+SHIP carrier = {"Carrier", false, {0, 0}, NULL, 5};
+SHIP battleship = {"Battleship", false, {0, 0}, NULL, 4};
+SHIP submarine = {"Submarine", false, {0, 0}, NULL, 3};
+SHIP cruiser = {"Cruiser", false, {0, 0}, NULL, 3};
+SHIP destroyer = {"Destroyer", false, {0, 0}, NULL, 2};
+
+SHIP *ships[] = {&carrier, &battleship, &submarine, &cruiser, &destroyer};
 
 // Define ship sizes
 #define CARRIER_SIZE 5
@@ -34,128 +57,102 @@ static bool setMark, dataCheck;
 static uint8_t placing_ship;
 static bool rotateShip;
 
+char temp_char[50];
+
 // Initialize the game variables and logic.
 // @param void: None
 // @return void: None
-void game_init(void){
+void game_init(void)
+{
     currentState = INIT_STATE;
-    placing_ship = CARRIER;
     rotateShip = false;
 }
 
-void game_tick(void){
-    switch(currentState){
-        case INIT_STATE:
-            currentState = NEW_GAME_STATE;
-            break;
-        case NEW_GAME_STATE:
-            currentState = PLACE_SHIPS_STATE;
-            break;
-        case PLACE_SHIPS_STATE: 
-            if(shipsPlaced){
-                currentState = READY_STATE;
-            } else{
-                currentState = PLACE_SHIPS_STATE;
-            }
-            break;
-        case READY_STATE:
-            break;
-        case PLAY_STATE:
-            break;
-        case END_STATE:
-            break;
-        default:
-            break;
+void print_ship(uint8_t ship_num)
+{
+    snprintf(temp_char, 50, "Place %s", ships[ship_num]->name);
+    graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+}
+
+void game_tick(void)
+{
+    switch (currentState)
+    {
+    case INIT_STATE:
+        currentState = NEW_GAME_STATE;
+        break;
+    case NEW_GAME_STATE:
+        currentState = PLACE_SHIPS_STATE;
+        print_ship(0);
+        break;
+    case PLACE_SHIPS_STATE:
+        if (placing_ship >= DESTROYER) {
+            currentState = READY_STATE;
+        }
+        break;
+    case READY_STATE:
+        break;
+    case PLAY_STATE:
+        break;
+    case END_STATE:
+        break;
+    default:
+        break;
     }
 
-    switch(currentState){
-        case INIT_STATE:
-            break;
-        case NEW_GAME_STATE:
-            lcd_fillScreen(CONFIG_BACK_CLR);
-            graphics_drawGrid(CONFIG_GRID_CLR);
-            board_clear();
-            nav_set_loc(0,0);
-            break;
-        case PLACE_SHIPS_STATE: 
-            int8_t row, column;
-            nav_get_loc(&row, &column);
-            coord start_coord = {row, column};
-            bool checkPlace = false;
+    switch (currentState)
+    {
+    case INIT_STATE:
+        break;
+    case NEW_GAME_STATE:
+        lcd_fillScreen(CONFIG_BACK_CLR);
+        graphics_drawGrid(CONFIG_GRID_CLR);
+        board_clear();
+        nav_set_loc(0, 0);
+        break;
+    case PLACE_SHIPS_STATE:
+        int8_t row, column;
+        nav_get_loc(&row, &column);
+        coord start_coord = {row, column};
+        bool checkPlace = false;
 
-            if(!pin_get_level(HW_BTN_B) && !rotateShip){
-                rotateShip = true;
-            } else if(!pin_get_level(HW_BTN_B) && rotateShip){
-                rotateShip = false;
+        if (!pin_get_level(HW_BTN_B))
+        {
+            rotateShip = !rotateShip;
+            while (!pin_get_level(HW_BTN_A)) {}
+        }
+
+        if (!rotateShip)
+        {
+            ships[placing_ship]->coordinates = get_coordinates(start_coord, ships[placing_ship]->length, HORIZONTAL);
+            for (int i = 0; i < CARRIER_SIZE; i++)
+            {
+                graphics_drawHighlight(ships[placing_ship]->coordinates[i].row, ships[placing_ship]->coordinates[i].col, CONFIG_HIGH_CLR);
             }
-
-            switch(placing_ship){
-                case CARRIER:
-                    coord* carrier_coords;
-                    graphics_drawMessage("Place Carrier", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
-                    if(!rotateShip){
-                        carrier_coords = get_coordinates(start_coord, CARRIER_SIZE, HORIZONTAL);
-                        for(int i = 0; i < CARRIER_SIZE; i++){
-                            graphics_drawHighlight(carrier_coords[i].row, carrier_coords[i].col, CONFIG_HIGH_CLR);
-                        }
-                    }
-                    else{
-                        carrier_coords = get_coordinates(start_coord, CARRIER_SIZE, VERTICAL);
-                        for(int i = 0; i < CARRIER_SIZE; i++){
-                            graphics_drawHighlight(carrier_coords[i].row, carrier_coords[i].col, CONFIG_HIGH_CLR);
-                        }
-                    }
-
-                    if(!pin_get_level(HW_BTN_A)){
-                        placing_ship = BATTLESHIP;
-                        checkPlace = true;
-                    }
-
-                    break;
-                case BATTLESHIP:
-                    coord* battleship_coords;
-                    graphics_drawMessage("Place Battleship", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
-                    if(!rotateShip){
-                        battleship_coords = get_coordinates(start_coord, BATTLESHIP_SIZE, HORIZONTAL);
-                        for(int i = 0; i < sizeof(battleship_coords); i++){
-                            graphics_drawHighlight(battleship_coords[i].row, battleship_coords[i].col, CONFIG_HIGH_CLR);
-                        }
-                    }
-                    else{
-                        battleship_coords = get_coordinates(start_coord, BATTLESHIP_SIZE, VERTICAL);
-                        for(int i = 0; i < sizeof(battleship_coords); i++){
-                            graphics_drawHighlight(battleship_coords[i].row, battleship_coords[i].col, CONFIG_HIGH_CLR);
-                        }
-                    }
-
-                    if(!pin_get_level(HW_BTN_A)){
-                        placing_ship = SUBMARINE;
-                    }
-
-                    break;
-                case SUBMARINE:
-                    graphics_drawMessage("Place Submarine", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
-                    
-                    break;
-                case CRUISER:
-                    graphics_drawMessage("Place Cruiser", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
-                    placing_ship++;
-                    break;
-                case DESTROYER:
-                    graphics_drawMessage("Place Destroyer", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
-                    shipsPlaced = true;
-                    break;
-                default:
-                    break;
+        }
+        else
+        {
+            ships[placing_ship]->coordinates = get_coordinates(start_coord, ships[placing_ship]->length, VERTICAL);
+            for (int i = 0; i < CARRIER_SIZE; i++)
+            {
+                graphics_drawHighlight(ships[placing_ship]->coordinates[i].row, ships[placing_ship]->coordinates[i].col, CONFIG_HIGH_CLR);
             }
-            break;
-        case READY_STATE:
-            break;
-        case PLAY_STATE:
-            break;
-        case END_STATE:
-            break;
-        default:
-            break;
+        }
+        if (!pin_get_level(HW_BTN_A))
+        {
+            placing_ship++;
+            checkPlace = true;
+            print_ship(placing_ship);
+            while (!pin_get_level(HW_BTN_A)) {}
+        }
+        break;
+    case READY_STATE:
+        break;
+    case PLAY_STATE:
+        break;
+    case END_STATE:
+        break;
+    default:
+        break;
     }
 }

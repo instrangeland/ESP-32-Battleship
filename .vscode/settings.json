@@ -1,7 +1,8 @@
 {
     "files.associations": {
         "tone.h": "c",
-        "coord.h": "c"
+        "coord.h": "c",
+        "ship.h": "c"
     },
     "cmake.sourceDirectory": "C:/Users/cgyat/Desktop/ECEN330_LAB07_F24/lab07"
 }
