@@ -51,7 +51,7 @@ bool check_coords_free(coord *coord_to_write, uint8_t num_coords)
 
 bool check_coords_within_board(coord *coord_to_write, uint8_t num_coords)
 {
-	printf("index %d", num_coords);
+	printf("index %d\n", num_coords);
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
 	{
 		if (coord_to_write[ship_num].row >= BOARD_R || coord_to_write[ship_num].col >= BOARD_C)
