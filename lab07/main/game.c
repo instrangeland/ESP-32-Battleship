@@ -160,7 +160,7 @@ void game_tick(void)
             ships[placing_ship]->placed = true;
             placing_ship++;
             print_ship(placing_ship);
-            redraw_ship(ships[placing_ship-1]->coordinates, ships[placing_ship]->length, GREEN, true);
+            redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
             while (!pin_get_level(HW_BTN_A))
             {
             }
