@@ -165,6 +165,7 @@ void game_tick(void)
             {
                 draw_invalid_ship(ships[placing_ship]->coordinates, find_full_coord(ships[placing_ship]->coordinates, ships[placing_ship]->length));
             }
+            print_ship(placing_ship);
             prev_column = column;
             prev_row = row;
         }
@@ -177,16 +178,17 @@ void game_tick(void)
             }
             ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
             redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
+            print_ship(placing_ship);
         }
         else if (!pin_get_level(HW_BTN_A))
         {
-            if (check_coords_free(ships[placing_ship]->coordinates, ships[placing_ship]->length))
+            if (all_coords_valid(ships[placing_ship]->coordinates, ships[placing_ship]->length))
             {
                 ships[placing_ship]->placed = true;
                 placing_ship++;
-                print_ship(placing_ship);
                 write_coords(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length);
                 redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
+                print_ship(placing_ship-1);
                 while (!pin_get_level(HW_BTN_A))
                 {
                 }

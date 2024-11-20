@@ -51,6 +51,7 @@ bool check_coords_free(coord *coord_to_write, uint8_t num_coords)
 
 bool check_coords_within_board(coord *coord_to_write, uint8_t num_coords)
 {
+	printf("index %d", num_coords);
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
 	{
 		if (coord_to_write[ship_num].row >= BOARD_R || coord_to_write[ship_num].col >= BOARD_C)
@@ -71,4 +72,9 @@ uint8_t find_full_coord(coord *coord_to_write, uint8_t num_coords)
 		}
 	}
 	return NULL;
+}
+
+bool all_coords_valid(coord *coord_to_write, uint8_t num_coords)
+{
+	return check_coords_within_board(coord_to_write, num_coords) && check_coords_free(coord_to_write, num_coords);
 }
