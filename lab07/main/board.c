@@ -61,7 +61,7 @@ bool check_coords_within_board(coord *coord_to_write, uint8_t num_coords)
 	return true;
 }
 
-coord *find_full_coord(coord *coord_to_write, uint8_t num_coords)
+uint8_t find_full_coord(coord *coord_to_write, uint8_t num_coords)
 {
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
 	{
