@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "coord.h"
+#include <stdio.h>
 
 // Clear the board
 void board_clear(void);
@@ -19,5 +20,11 @@ bool board_winner();
 // Get a count of marks in the board.
 // Use to determine a draw condition if count is equal to CONFIG_BOARD_SPACES
 uint16_t board_mark_count(void);
+
+void write_coords(coord *coord_to_write, uint8_t num_coords);
+
+bool check_coords_free(coord *coord_to_write, uint8_t num_coords);
+
+coord *find_full_coord(coord *coord_to_write, uint8_t num_coords);
 
 #endif // BOARD_H_
