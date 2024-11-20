@@ -47,7 +47,7 @@ static enum GAME_CNTRL_STATE currentState;
 static int8_t playerTurn;
 static bool shipsPlaced;
 static bool setMark, dataCheck;
-static uint8_t placing_ship;
+static uint8_t placing_ship = 0;
 static bool rotateShip;
 
 char temp_char[50];
@@ -97,9 +97,10 @@ void game_tick(void)
         print_ship(0);
         break;
     case PLACE_SHIPS_STATE:
-        if (placing_ship >= DESTROYER)
+        if (placing_ship > 4)
         {
             currentState = READY_STATE;
+            graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
         }
         break;
     case READY_STATE:
@@ -159,6 +160,7 @@ void game_tick(void)
             ships[placing_ship]->placed = true;
             placing_ship++;
             print_ship(placing_ship);
+            redraw_ship(ships[placing_ship-1]->coordinates, ships[placing_ship]->length, GREEN, true);
             while (!pin_get_level(HW_BTN_A))
             {
             }
