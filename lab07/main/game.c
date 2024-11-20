@@ -93,8 +93,9 @@ void redraw_all_ships()
 
 void draw_invalid_ship(coord *coords_to_draw, uint8_t invalid_starting_at)
 {
-    redraw_ship(coords_to_draw, invalid_starting_at - 1, GREEN, false);
-    graphics_drawX(coords_to_draw[invalid_starting_at].row, coords_to_draw[invalid_starting_at].row, RED);
+    printf("invalid starting at %d\n", invalid_starting_at);
+    redraw_ship(coords_to_draw, invalid_starting_at, GREEN, false);
+    graphics_drawX(coords_to_draw[invalid_starting_at].row, coords_to_draw[invalid_starting_at].col, RED);
 }
 
 int8_t prev_row,
@@ -155,6 +156,7 @@ void game_tick(void)
             start_coords.row = row;
             start_coords.col = column;
             ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
+            redraw_all_ships();
             if (check_coords_free(ships[placing_ship]->coordinates, ships[placing_ship]->length))
             {
                 redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
@@ -165,7 +167,6 @@ void game_tick(void)
             }
             prev_column = column;
             prev_row = row;
-            redraw_all_ships();
         }
         else if (!pin_get_level(HW_BTN_B))
         {
