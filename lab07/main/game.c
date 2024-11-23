@@ -94,11 +94,13 @@ void redraw_all_ships()
     }
 }
 
-void draw_invalid_ship(coord *coords_to_draw, uint8_t invalid_starting_at)
+void draw_invalid_ship(coord *coords_to_draw, uint8_t invalid_starting_at, uint8_t ship_length)
 {
     printf("invalid starting at %d\n", invalid_starting_at);
     redraw_ship(coords_to_draw, invalid_starting_at, GREEN, false);
-    graphics_drawX(coords_to_draw[invalid_starting_at].row, coords_to_draw[invalid_starting_at].col, RED);
+    for (uint8_t i=invalid_starting_at; i<ship_length; i++) {
+        graphics_drawX(coords_to_draw[i].row, coords_to_draw[i].col, RED);
+    }   
 }
 
 int8_t prev_row,
@@ -168,7 +170,7 @@ void game_tick(void)
             }
             else
             {
-                draw_invalid_ship(ships[placing_ship]->coordinates, find_full_coord(ships[placing_ship]->coordinates, ships[placing_ship]->length));
+                draw_invalid_ship(ships[placing_ship]->coordinates, find_invalid_coord(ships[placing_ship]->coordinates, ships[placing_ship]->length), ships[placing_ship]->length);
             }
             print_ship(placing_ship);
             prev_column = column;
@@ -197,12 +199,16 @@ void game_tick(void)
                 redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
                 print_ship(placing_ship - 1);
 
-                if(rotateShip){
+                if (rotateShip)
+                {
                     nav_set_loc(row, column + 1);
-                } else{
+                }
+                else
+                {
                     nav_set_loc(row + 1, column);
                 }
             }
+            print_board();
         }
         else if (pressed && !btns)
         {

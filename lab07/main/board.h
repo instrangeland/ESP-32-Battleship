@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include "game.h"
 
-
 #define BOARD_R CONFIG_BOARD_R // Rows
 #define BOARD_C CONFIG_BOARD_C // Columns
 #define BOARD_N CONFIG_BOARD_N // Number of contiguous marks
@@ -31,8 +30,10 @@ void write_coords(coord *coord_to_write, uint8_t num_coords, int8_t ship_num);
 bool check_coords_free(coord *coord_to_write, uint8_t num_coords);
 bool check_coords_within_board(coord *coord_to_write, uint8_t num_coords);
 
-uint8_t find_full_coord(coord *coord_to_write, uint8_t num_coords);
+uint8_t find_invalid_coord(coord *coord_to_write, uint8_t num_coords);
 
 bool all_coords_valid(coord *coord_to_write, uint8_t num_coords);
+
+void print_board();
 
 #endif // BOARD_H_

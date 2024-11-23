@@ -1,7 +1,6 @@
 #include "board.h"
 #include "config.h"
-
-
+#include "stdio.h"
 
 static int8_t board[BOARD_R][BOARD_C];
 static uint16_t mark_count;
@@ -22,9 +21,9 @@ int8_t board_get_coord(coord check_coord)
 
 void write_coords(coord *coord_to_write, uint8_t num_coords, int8_t ship_num)
 {
-	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
+	for (uint8_t i = 0; i <= num_coords; i++)
 	{
-		board[coord_to_write[ship_num].row][coord_to_write[ship_num].col] = ship_num;
+		board[coord_to_write[i].row][coord_to_write[i].col] = ship_num;
 	}
 }
 
@@ -64,19 +63,33 @@ bool check_coords_within_board(coord *coord_to_write, uint8_t num_coords)
 	return true;
 }
 
-uint8_t find_full_coord(coord *coord_to_write, uint8_t num_coords)
+uint8_t find_invalid_coord(coord *coord_to_write, uint8_t num_coords)
 {
-	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
+	for (uint8_t i = 0; i < num_coords; i++)
 	{
-		if (board[coord_to_write[ship_num].row][coord_to_write[ship_num].col])
+		if (board[coord_to_write[i].row][coord_to_write[i].col] != EMPTY_SPACE)
 		{
-			return ship_num;
+			return i;
 		}
 	}
+	assert("find_invalid_coord shouldn't reach the end");
 	return EMPTY_SPACE;
 }
 
 bool all_coords_valid(coord *coord_to_write, uint8_t num_coords)
 {
 	return check_coords_within_board(coord_to_write, num_coords) && check_coords_free(coord_to_write, num_coords);
+}
+
+void print_board()
+{
+	printf("board\n");
+	for (int8_t r = 0; r < BOARD_R; r++)
+	{
+		for (int8_t c = 0; c < BOARD_C; c++)
+		{
+			printf("%d", board[r][c] + 1);
+		}
+		printf("\n");
+	}
 }
