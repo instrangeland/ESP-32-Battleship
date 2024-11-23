@@ -159,6 +159,7 @@ void game_tick(void)
             redraw_ship(get_coordinates(prev_coords, ships[placing_ship]->length, !rotateShip), ships[placing_ship]->length, CONFIG_BACK_CLR, true);
             start_coords.row = row;
             start_coords.col = column;
+            
             ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
             redraw_all_ships();
             if (check_coords_free(ships[placing_ship]->coordinates, ships[placing_ship]->length))
@@ -194,7 +195,11 @@ void game_tick(void)
                 redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
                 print_ship(placing_ship - 1);
 
-                nav_set_loc(row + 1, column);
+                if(rotateShip){
+                    nav_set_loc(row, column + 1);
+                } else{
+                    nav_set_loc(row + 1, column);
+                }
             }
         }
         else if (pressed && !btns)
