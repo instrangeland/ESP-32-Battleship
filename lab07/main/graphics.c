@@ -2,6 +2,7 @@
 #include "graphics.h"
 #include "config.h"
 
+
 #define MESS_FONT_SZ 1
 
 #define MESS_X (LCD_CHAR_W*MESS_FONT_SZ)
@@ -80,18 +81,6 @@ void graphics_drawHighlight(int8_t r, int8_t c, color_t color)
 
 void graphics_filldrawHighlight(int8_t r, int8_t c, color_t color)
 {
-	coord_t x = VIEW_X + c * CELL_W;
-	coord_t y = VIEW_Y + r * CELL_H;
-
-	lcd_fillRect(x+HIGH_MARGIN, y+HIGH_MARGIN,
-		CELL_W-2*HIGH_MARGIN+1, CELL_H-2*HIGH_MARGIN+1, color);
-}
-
-
-
-void graphics_drawBattleship(int8_t r, int8_t c, color_t color)
-{
-    // Top-left corner of the cell
     coord_t x = VIEW_X + c * CELL_W;
     coord_t y = VIEW_Y + r * CELL_H;
 
@@ -103,15 +92,17 @@ void graphics_drawBattleship(int8_t r, int8_t c, color_t color)
     coord_t ship_x = x + HIGH_MARGIN;
     coord_t ship_y = y + (CELL_H - ship_h) / 2;
 
-    // Draw the rectangle representing the battleship
-    lcd_fillRect(x+HIGH_MARGIN, y+HIGH_MARGIN,
-		CELL_W-2*HIGH_MARGIN+1, CELL_H-2*HIGH_MARGIN+1, color);
+    lcd_fillRect(x+HIGH_MARGIN, y+HIGH_MARGIN, CELL_W-2*HIGH_MARGIN+1, CELL_H-2*HIGH_MARGIN+1, color);
 
-    // Optionally, add details like stripes or windows
-    coord_t window_size = MARK_MARGIN; // Size of a window
-    for (int i = 0; i < 3; i++) {
-        coord_t wx = ship_x + i * (ship_w / 4) + window_size;
-        coord_t wy = ship_y + ship_h / 2 - window_size / 2;
-        lcd_fillRect(wx, wy, window_size, window_size, WHITE); // Windows in white
+
+    // Only draw windows if the color is not the background color
+    if (color != CONFIG_BACK_CLR) {
+        coord_t window_size = MARK_MARGIN; // Size of a window
+        for (int i = 0; i < 3; i++) {
+            coord_t wx = ship_x + i * (ship_w / 4) + window_size;
+            coord_t wy = ship_y + ship_h / 2 - window_size / 2;
+            lcd_fillRect(wx, wy, window_size, window_size, WHITE); // Windows in white
+        }
     }
 }
+

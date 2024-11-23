@@ -95,14 +95,14 @@ void redraw_all_ships()
     for (uint8_t cur_ship = 0; cur_ship < 5; cur_ship++)
     {
         if (ships[cur_ship]->placed)
-            redraw_ship(ships[cur_ship]->coordinates, ships[cur_ship]->length, GREEN, true);
+            redraw_ship(ships[cur_ship]->coordinates, ships[cur_ship]->length, CONFIG_BTTLESHIP_CLR, true);
     }
 }
 
 void draw_invalid_ship(coord *coords_to_draw, uint8_t invalid_starting_at, uint8_t ship_length)
 {
     printf("invalid starting at %d\n", invalid_starting_at);
-    redraw_ship(coords_to_draw, invalid_starting_at, GREEN, false);
+    redraw_ship(coords_to_draw, invalid_starting_at, CONFIG_BTTLESHIP_CLR, false);
     for (uint8_t i=invalid_starting_at; i<ship_length; i++) {
         graphics_drawX(coords_to_draw[i].row, coords_to_draw[i].col, RED);
     }   
@@ -190,7 +190,7 @@ void game_tick(void)
             rotateShip = !rotateShip;
 
             get_coordinates(ships[placing_ship]->coordinates, start_coords, ships[placing_ship]->length, !rotateShip);
-            redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
+            redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, CONFIG_BTTLESHIP_CLR, false);
             print_ship(placing_ship);
         }
         else if (!pin_get_level(HW_BTN_A) && !pressed && btns)
@@ -201,7 +201,7 @@ void game_tick(void)
                 ships[placing_ship]->placed = true;
                 placing_ship++;
                 write_coords(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, placing_ship - 1);
-                redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
+                redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, CONFIG_BTTLESHIP_CLR, true);
                 print_ship(placing_ship - 1);
 
                 if (rotateShip)
