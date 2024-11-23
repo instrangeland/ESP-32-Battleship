@@ -73,7 +73,7 @@ uint8_t find_full_coord(coord *coord_to_write, uint8_t num_coords)
 			return ship_num;
 		}
 	}
-	return NULL;
+	return EMPTY_SPACE;
 }
 
 bool all_coords_valid(coord *coord_to_write, uint8_t num_coords)

@@ -30,11 +30,11 @@ enum SHIP_TYPE
     CRUISER = 3,
     DESTROYER = 4,
 };
-SHIP carrier = {"Carrier", false, {0, 0}, NULL, 5};
-SHIP battleship = {"Battleship", false, {0, 0}, NULL, 4};
-SHIP submarine = {"Submarine", false, {0, 0}, NULL, 3};
-SHIP cruiser = {"Cruiser", false, {0, 0}, NULL, 3};
-SHIP destroyer = {"Destroyer", false, {0, 0}, NULL, 2};
+SHIP carrier = {"Carrier", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 5};
+SHIP battleship = {"Battleship", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 4};
+SHIP submarine = {"Submarine", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 3};
+SHIP cruiser = {"Cruiser", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 3};
+SHIP destroyer = {"Destroyer", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 2};
 
 SHIP *ships[] = {&carrier, &battleship, &submarine, &cruiser, &destroyer};
 
@@ -50,7 +50,7 @@ static bool setMark, dataCheck;
 static uint8_t placing_ship = 0;
 static bool rotateShip, pressed;
 static uint64_t btns;
-
+coord temp_coordinates[5];
 char temp_char[50];
 
 // Initialize the game variables and logic.
@@ -156,11 +156,11 @@ void game_tick(void)
         if ((prev_column != column) || (prev_row != row))
         {
             coord prev_coords = {prev_row, prev_column};
-            redraw_ship(get_coordinates(prev_coords, ships[placing_ship]->length, !rotateShip), ships[placing_ship]->length, CONFIG_BACK_CLR, true);
+            get_coordinates(temp_coordinates, prev_coords, ships[placing_ship]->length, !rotateShip);
+            redraw_ship(temp_coordinates, ships[placing_ship]->length, CONFIG_BACK_CLR, true);
             start_coords.row = row;
             start_coords.col = column;
-            
-            ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
+            get_coordinates(ships[placing_ship]->coordinates, start_coords, ships[placing_ship]->length, !rotateShip);
             redraw_all_ships();
             if (check_coords_free(ships[placing_ship]->coordinates, ships[placing_ship]->length))
             {
@@ -177,10 +177,12 @@ void game_tick(void)
         else if (!pin_get_level(HW_BTN_B) && !pressed && btns)
         {
             pressed = true;
-            redraw_ship(get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip), ships[placing_ship]->length, CONFIG_BACK_CLR, true);
+
+            get_coordinates(temp_coordinates, start_coords, ships[placing_ship]->length, !rotateShip);
+            redraw_ship(temp_coordinates, ships[placing_ship]->length, CONFIG_BACK_CLR, true);
             rotateShip = !rotateShip;
 
-            ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
+            get_coordinates(ships[placing_ship]->coordinates, start_coords, ships[placing_ship]->length, !rotateShip);
             redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
             print_ship(placing_ship);
         }
@@ -195,11 +197,7 @@ void game_tick(void)
                 redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
                 print_ship(placing_ship - 1);
 
-                if(rotateShip){
-                    nav_set_loc(row, column + 1);
-                } else{
-                    nav_set_loc(row + 1, column);
-                }
+                nav_set_loc(row + 1, column);
             }
         }
         else if (pressed && !btns)
@@ -208,7 +206,6 @@ void game_tick(void)
         }
         break;
     case READY_STATE:
-        
         break;
     case PLAY_STATE:
         break;
