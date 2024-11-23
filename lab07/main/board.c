@@ -5,8 +5,9 @@
 #define BOARD_C CONFIG_BOARD_C // Columns
 #define BOARD_N CONFIG_BOARD_N // Number of contiguous marks
 #define BOARD_SPACES CONFIG_BOARD_SPACES
+#define EMPTY_SPACE -1
 
-static bool board[BOARD_R][BOARD_C];
+static int8_t board[BOARD_R][BOARD_C];
 static uint16_t mark_count;
 
 // Clear the board
@@ -14,25 +15,25 @@ void board_clear(void)
 {
 	for (int8_t r = 0; r < BOARD_R; r++)
 		for (int8_t c = 0; c < BOARD_C; c++)
-			board[r][c] = false;
+			board[r][c] = EMPTY_SPACE;
 	mark_count = 0;
 }
 
-bool board_get_coord(coord check_coord)
+int8_t board_get_coord(coord check_coord)
 {
 	return board[check_coord.row][check_coord.col];
 }
 
-void write_coords(coord *coord_to_write, uint8_t num_coords)
+void write_coords(coord *coord_to_write, uint8_t num_coords, int8_t ship_num)
 {
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
 	{
-		board[coord_to_write[ship_num].row][coord_to_write[ship_num].col] = true;
+		board[coord_to_write[ship_num].row][coord_to_write[ship_num].col] = ship_num;
 	}
 }
 
 // Get mark at board location
-bool board_get_vars(int8_t r, int8_t c)
+int8_t board_get_vars(int8_t r, int8_t c)
 {
 	return board[r][c];
 }
@@ -41,12 +42,17 @@ bool check_coords_free(coord *coord_to_write, uint8_t num_coords)
 {
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
 	{
-		if (board[coord_to_write[ship_num].row][coord_to_write[ship_num].col])
+		if (board[coord_to_write[ship_num].row][coord_to_write[ship_num].col] != EMPTY_SPACE)
 		{
 			return false;
 		}
 	}
 	return true;
+}
+
+int8_t get_ship_num(coord coord_to_check)
+{
+	return board[coord_to_check.row][coord_to_check.col];
 }
 
 bool check_coords_within_board(coord *coord_to_write, uint8_t num_coords)

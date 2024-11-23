@@ -178,7 +178,7 @@ void game_tick(void)
             pressed = true;
             redraw_ship(get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip), ships[placing_ship]->length, CONFIG_BACK_CLR, true);
             rotateShip = !rotateShip;
-            
+
             ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
             redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
             print_ship(placing_ship);
@@ -190,13 +190,15 @@ void game_tick(void)
             {
                 ships[placing_ship]->placed = true;
                 placing_ship++;
-                write_coords(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length);
+                write_coords(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, placing_ship - 1);
                 redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
-                print_ship(placing_ship-1);
+                print_ship(placing_ship - 1);
 
-                nav_set_loc(row+1, column);
+                nav_set_loc(row + 1, column);
             }
-        } else if(pressed && !btns) {
+        }
+        else if (pressed && !btns)
+        {
             pressed = false; // all released
         }
         break;
