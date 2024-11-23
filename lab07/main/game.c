@@ -62,6 +62,11 @@ void game_init(void)
     rotateShip = false;
     pressed = false;
     btns = 0;
+    playerTurn = 0;
+    shipsPlaced = false;
+    setMark = false;
+    dataCheck = false;
+    
 }
 
 void print_ship(uint8_t ship_num)
