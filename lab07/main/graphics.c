@@ -86,3 +86,31 @@ void graphics_filldrawHighlight(int8_t r, int8_t c, color_t color)
 	lcd_fillRect(x+HIGH_MARGIN, y+HIGH_MARGIN,
 		CELL_W-2*HIGH_MARGIN+1, CELL_H-2*HIGH_MARGIN+1, color);
 }
+
+
+
+void graphics_drawBattleship(int8_t r, int8_t c, color_t color)
+{
+    // Top-left corner of the cell
+    coord_t x = VIEW_X + c * CELL_W;
+    coord_t y = VIEW_Y + r * CELL_H;
+
+    // Define the battleship size relative to the cell
+    coord_t ship_w = CELL_W - 2 * HIGH_MARGIN; // Ship width
+    coord_t ship_h = CELL_H / 2;              // Ship height (half the cell height)
+
+    // Center the battleship vertically within the cell
+    coord_t ship_x = x + HIGH_MARGIN;
+    coord_t ship_y = y + (CELL_H - ship_h) / 2;
+
+    // Draw the rectangle representing the battleship
+    lcd_fillRect(ship_x, ship_y, ship_w, ship_h, color);
+
+    // Optionally, add details like stripes or windows
+    coord_t window_size = MARK_MARGIN; // Size of a window
+    for (int i = 0; i < 3; i++) {
+        coord_t wx = ship_x + i * (ship_w / 4) + window_size;
+        coord_t wy = ship_y + ship_h / 2 - window_size / 2;
+        lcd_fillRect(wx, wy, window_size, window_size, BLUE); // Windows in white
+    }
+}

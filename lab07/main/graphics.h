@@ -49,4 +49,6 @@ void graphics_drawHighlight(int8_t r, int8_t c, color_t color);
 
 void graphics_filldrawHighlight(int8_t r, int8_t c, color_t color);
 
+void graphics_drawBattleship(int8_t r, int8_t c, color_t color);
+
 #endif // GRAPHICS_H_
