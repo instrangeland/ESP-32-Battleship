@@ -1,7 +1,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define CONFIG_GAME_TIMER_PERIOD 40.0E-3f
+// Original time is 40.0E-3f
+#define CONFIG_GAME_TIMER_PERIOD 100.0E-3f
 
 // Board
 #define CONFIG_BOARD_R 10 // Rows

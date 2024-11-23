@@ -171,11 +171,12 @@ void game_tick(void)
         }
         else if (!pin_get_level(HW_BTN_B))
         {
+            
             redraw_ship(get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip), ships[placing_ship]->length, CONFIG_BACK_CLR, true);
             rotateShip = !rotateShip;
-            while (!pin_get_level(HW_BTN_B))
+            /*while (!pin_get_level(HW_BTN_B))
             {
-            }
+            }*/
             ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
             redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
             print_ship(placing_ship);
@@ -189,9 +190,9 @@ void game_tick(void)
                 write_coords(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length);
                 redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
                 print_ship(placing_ship-1);
-                while (!pin_get_level(HW_BTN_A))
+                /*while (!pin_get_level(HW_BTN_A))
                 {
-                }
+                }*/
             }
         }
         break;
