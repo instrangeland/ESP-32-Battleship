@@ -197,7 +197,11 @@ void game_tick(void)
                 redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
                 print_ship(placing_ship - 1);
 
-                nav_set_loc(row + 1, column);
+                if(rotateShip){
+                    nav_set_loc(row, column + 1);
+                } else{
+                    nav_set_loc(row + 1, column);
+                }
             }
         }
         else if (pressed && !btns)
