@@ -171,7 +171,7 @@ void game_tick(void)
             redraw_all_ships();
             if (check_coords_free(ships[placing_ship]->coordinates, ships[placing_ship]->length))
             {
-                redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
+                redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, CONFIG_BTTLESHIP_CLR, false);
             }
             else
             {

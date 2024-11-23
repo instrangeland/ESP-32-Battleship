@@ -15,12 +15,12 @@
 #define CONFIG_BOARD_SPACES (CONFIG_BOARD_R*CONFIG_BOARD_C)
 
 // Colors
-#define CONFIG_BACK_CLR rgb565(14, 46, 28) //original color rgb565(0, 16, 42)
+#define CONFIG_BACK_CLR CYAN //original color rgb565(0, 16, 42)
 #define CONFIG_BTTLESHIP_CLR rgb565(0, 16, 42)
-#define CONFIG_GRID_CLR WHITE
+#define CONFIG_GRID_CLR rgb565(0, 16, 42)
 #define CONFIG_MISS_MARK_CLR YELLOW
 #define CONFIG_HIT_MARK_CLR RED
 #define CONFIG_HIGH_CLR GREEN
-#define CONFIG_MESS_CLR CYAN
+#define CONFIG_MESS_CLR rgb565(0, 16, 42)
 
 #endif // CONFIG_H_
