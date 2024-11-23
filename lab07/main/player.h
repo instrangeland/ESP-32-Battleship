@@ -11,7 +11,7 @@ typedef enum shot
     HIT,
     MISS,
     INVALID,
-    PREVIOUS,
+    PREVIOUS, // I meant previous as in "we shot this place before, captain"
 } ShotType;
 
 void init_shot_board();

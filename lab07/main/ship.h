@@ -14,7 +14,7 @@ typedef struct ship
     char *name;
     bool placed;
     coord start_coord;
-    coord *coordinates;
+    coord coordinates;
     uint8_t length;
 } SHIP;
 

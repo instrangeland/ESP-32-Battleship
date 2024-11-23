@@ -1,11 +1,7 @@
 #include "board.h"
 #include "config.h"
 
-#define BOARD_R CONFIG_BOARD_R // Rows
-#define BOARD_C CONFIG_BOARD_C // Columns
-#define BOARD_N CONFIG_BOARD_N // Number of contiguous marks
-#define BOARD_SPACES CONFIG_BOARD_SPACES
-#define EMPTY_SPACE -1
+
 
 static int8_t board[BOARD_R][BOARD_C];
 static uint16_t mark_count;

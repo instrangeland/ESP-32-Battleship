@@ -208,6 +208,7 @@ void game_tick(void)
         }
         break;
     case READY_STATE:
+        
         break;
     case PLAY_STATE:
         break;
