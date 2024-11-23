@@ -48,7 +48,8 @@ static int8_t playerTurn;
 static bool shipsPlaced;
 static bool setMark, dataCheck;
 static uint8_t placing_ship = 0;
-static bool rotateShip;
+static bool rotateShip, pressed;
+static uint64_t btns;
 
 char temp_char[50];
 
@@ -59,6 +60,8 @@ void game_init(void)
 {
     currentState = INIT_STATE;
     rotateShip = false;
+    pressed = false;
+    btns = 0;
 }
 
 void print_ship(uint8_t ship_num)
@@ -148,6 +151,7 @@ void game_tick(void)
         coord start_coords = {row, column};
         bool checkPlace = false;
         bool dirty = false;
+        btns = ~pin_get_in_reg() & HW_BTN_MASK;
         // this is dirty
         if ((prev_column != column) || (prev_row != row))
         {
@@ -169,20 +173,19 @@ void game_tick(void)
             prev_column = column;
             prev_row = row;
         }
-        else if (!pin_get_level(HW_BTN_B))
+        else if (!pin_get_level(HW_BTN_B) && !pressed && btns)
         {
-            
+            pressed = true;
             redraw_ship(get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip), ships[placing_ship]->length, CONFIG_BACK_CLR, true);
             rotateShip = !rotateShip;
-            /*while (!pin_get_level(HW_BTN_B))
-            {
-            }*/
+            
             ships[placing_ship]->coordinates = get_coordinates(start_coords, ships[placing_ship]->length, !rotateShip);
             redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, GREEN, false);
             print_ship(placing_ship);
         }
-        else if (!pin_get_level(HW_BTN_A))
+        else if (!pin_get_level(HW_BTN_A) && !pressed && btns)
         {
+            pressed = true;
             if (all_coords_valid(ships[placing_ship]->coordinates, ships[placing_ship]->length))
             {
                 ships[placing_ship]->placed = true;
@@ -190,10 +193,11 @@ void game_tick(void)
                 write_coords(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length);
                 redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, GREEN, true);
                 print_ship(placing_ship-1);
-                /*while (!pin_get_level(HW_BTN_A))
-                {
-                }*/
+
+                nav_set_loc(row+1, column);
             }
+        } else if(pressed && !btns) {
+            pressed = false; // all released
         }
         break;
     case READY_STATE:
