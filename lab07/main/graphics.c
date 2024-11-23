@@ -104,13 +104,14 @@ void graphics_drawBattleship(int8_t r, int8_t c, color_t color)
     coord_t ship_y = y + (CELL_H - ship_h) / 2;
 
     // Draw the rectangle representing the battleship
-    lcd_fillRect(ship_x, ship_y, ship_w, ship_h, color);
+    lcd_fillRect(x+HIGH_MARGIN, y+HIGH_MARGIN,
+		CELL_W-2*HIGH_MARGIN+1, CELL_H-2*HIGH_MARGIN+1, color);
 
     // Optionally, add details like stripes or windows
     coord_t window_size = MARK_MARGIN; // Size of a window
     for (int i = 0; i < 3; i++) {
         coord_t wx = ship_x + i * (ship_w / 4) + window_size;
         coord_t wy = ship_y + ship_h / 2 - window_size / 2;
-        lcd_fillRect(wx, wy, window_size, window_size, BLUE); // Windows in white
+        lcd_fillRect(wx, wy, window_size, window_size, WHITE); // Windows in white
     }
 }
