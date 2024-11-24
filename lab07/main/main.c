@@ -13,6 +13,7 @@
 #include "graphics.h"
 #include "game.h"
 #include "config.h"
+#include "menu.h"
 
 // The update period as an integer in ms
 #define PER_MS ((uint32_t)(CONFIG_GAME_TIMER_PERIOD * 1000))
@@ -48,7 +49,8 @@ void app_main(void)
 	nav_init(PER_MS);
 
 	com_init();
-	game_init();
+	//game_init();
+	menu_init();
 
 	// Configure I/O pins for buttons
 	pin_reset(HW_BTN_A);
@@ -93,7 +95,8 @@ void app_main(void)
 		interrupt_flag = false;
 		isr_handled_count++;
 
-		game_tick();
+		menu_tick();
+		//game_tick();
 		nav_tick();
 		t2 = esp_timer_get_time() - t1;
 		if (t2 > tmax)
