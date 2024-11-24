@@ -1,5 +1,5 @@
 #include "attack.h"
-ShotType has_shot_here(PLAYER *player, coord coord_to_check)
+ShotType has_shot_here(PLAYER *player, COORD coord_to_check)
 {
     if (!check_coords_within_board(&coord_to_check, 1))
         return INVALID;
@@ -9,7 +9,7 @@ ShotType has_shot_here(PLAYER *player, coord coord_to_check)
         return HIT;
     return MISS;
 }
-ShotType record_in_shots(PLAYER *player, coord coord_to_check)
+ShotType record_in_shots(PLAYER *player, COORD coord_to_check)
 {
     if (!check_coords_within_board(&coord_to_check, 1))
         return INVALID;

@@ -2,7 +2,7 @@
 #include "coord.h"
 #include <stdint.h>
 #include <stdlib.h>
-void get_coordinates(coord *write_array, coord start_coordinate, uint8_t length, orientation direction)
+void get_coordinates(COORD *write_array, COORD start_coordinate, uint8_t length, orientation direction)
 {
     if (direction == VERTICAL)
     {

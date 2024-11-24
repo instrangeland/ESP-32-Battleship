@@ -18,6 +18,7 @@ enum GAME_CNTRL_STATE
     INIT_STATE,
     NEW_GAME_STATE,
     PLACE_SHIPS_STATE,
+    P2_PLACE_SHIPS_STATE,
     READY_STATE,
     PLAY_STATE,
     END_STATE
@@ -46,7 +47,7 @@ static bool setMark, dataCheck;
 static uint8_t placing_ship = 0;
 static bool rotateShip, pressed;
 static uint64_t btns;
-coord temp_coordinates[5];
+COORD temp_coordinates[5];
 char temp_char[50];
 
 // Initialize the game variables and logic.
@@ -75,7 +76,7 @@ void print_ship(uint8_t ship_num)
     graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
 }
 
-void redraw_ship(coord *coord_to_draw, uint8_t num_coords, color_t color, bool filled)
+void redraw_ship(COORD *coord_to_draw, uint8_t num_coords, color_t color, bool filled)
 {
     for (int i = 0; i < num_coords; i++)
     {
@@ -90,16 +91,16 @@ void redraw_ship(coord *coord_to_draw, uint8_t num_coords, color_t color, bool f
     }
 }
 
-void redraw_all_ships()
+void redraw_all_ships(PLAYER *player)
 {
     for (uint8_t cur_ship = 0; cur_ship < 5; cur_ship++)
     {
-        if (player1.ships[cur_ship].placed)
-            redraw_ship(player1.ships[cur_ship].coordinates, player1.ships[cur_ship].length, CONFIG_BTTLESHIP_CLR, true);
+        if (player->ships[cur_ship].placed)
+            redraw_ship(player->ships[cur_ship].coordinates, player->ships[cur_ship].length, CONFIG_BTTLESHIP_CLR, true);
     }
 }
 
-void draw_invalid_ship(coord *coords_to_draw, uint8_t invalid_starting_at, uint8_t ship_length)
+void draw_invalid_ship(COORD *coords_to_draw, uint8_t invalid_starting_at, uint8_t ship_length)
 {
     printf("invalid starting at %d\n", invalid_starting_at);
     redraw_ship(coords_to_draw, invalid_starting_at, GREEN, false);
@@ -129,8 +130,20 @@ void game_tick(void)
             lcd_fillScreen(CONFIG_BACK_CLR);
             graphics_drawGrid(CONFIG_GRID_CLR);
             currentState = READY_STATE;
-            redraw_all_ships();
+            redraw_all_ships(&player1);
             graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+            currentState = P2_PLACE_SHIPS_STATE;
+        }
+        break;
+    case P2_PLACE_SHIPS_STATE:
+        if (placing_ship > 4)
+        {
+            lcd_fillScreen(CONFIG_BACK_CLR);
+            graphics_drawGrid(CONFIG_GRID_CLR);
+            currentState = READY_STATE;
+            redraw_all_ships(&player2);
+            graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+            currentState = P2_PLACE_SHIPS_STATE;
         }
         break;
     case READY_STATE:
@@ -155,20 +168,20 @@ void game_tick(void)
     case PLACE_SHIPS_STATE:
         int8_t column, row;
         nav_get_loc(&row, &column);
-        coord start_coords = {row, column};
+        COORD start_coords = {row, column};
         bool checkPlace = false;
         bool dirty = false;
         btns = ~pin_get_in_reg() & HW_BTN_MASK;
         // this is dirty
         if ((prev_column != column) || (prev_row != row))
         {
-            coord prev_coords = {prev_row, prev_column};
+            COORD prev_coords = {prev_row, prev_column};
             get_coordinates(temp_coordinates, prev_coords, player1.ships[placing_ship].length, !rotateShip);
             redraw_ship(temp_coordinates, player1.ships[placing_ship].length, CONFIG_BACK_CLR, true);
             start_coords.row = row;
             start_coords.col = column;
             get_coordinates(player1.ships[placing_ship].coordinates, start_coords, player1.ships[placing_ship].length, !rotateShip);
-            redraw_all_ships();
+            redraw_all_ships(&player1);
             if (check_coords_free(&player1, player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length))
             {
                 redraw_ship(player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, false);
@@ -220,6 +233,16 @@ void game_tick(void)
             pressed = false; // all released
         }
         break;
+    case P2_PLACE_SHIPS_STATE:
+        if (true)
+        {
+                }
+        else if (false)
+        { // 2 people same handheld
+        }
+        else if (false)
+        { // 2 people diff handheld over uart
+        }
     case READY_STATE:
         break;
     case PLAY_STATE:
