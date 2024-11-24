@@ -94,7 +94,7 @@ void redraw_all_ships()
 {
     for (uint8_t cur_ship = 0; cur_ship < 5; cur_ship++)
     {
-        if (ships[cur_ship]->placed)
+        if (player1.ships[cur_ship].placed)
             redraw_ship(player1.ships[cur_ship].coordinates, player1.ships[cur_ship].length, CONFIG_BTTLESHIP_CLR, true);
     }
 }
@@ -189,7 +189,7 @@ void game_tick(void)
             redraw_ship(temp_coordinates, player1.ships[placing_ship].length, CONFIG_BACK_CLR, true);
             rotateShip = !rotateShip;
 
-            get_coordinates(ships[placing_ship]->coordinates, start_coords, ships[placing_ship]->length, !rotateShip);
+            get_coordinates(player1.ships[placing_ship].coordinates, start_coords, player1.ships[placing_ship].length, !rotateShip);
             redraw_ship(player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, false);
             print_ship(placing_ship);
         }
