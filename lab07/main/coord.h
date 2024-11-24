@@ -7,6 +7,4 @@ typedef struct coords
     uint8_t col;
 } coord;
 
-
-
 #endif /* D03855FB_AC4D_4B64_836C_C376F7966EE5 */

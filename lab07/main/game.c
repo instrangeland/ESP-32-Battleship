@@ -30,13 +30,9 @@ enum SHIP_TYPE
     CRUISER = 3,
     DESTROYER = 4,
 };
-SHIP carrier = {"Carrier", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 5};
-SHIP battleship = {"Battleship", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 4};
-SHIP submarine = {"Submarine", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 3};
-SHIP cruiser = {"Cruiser", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 3};
-SHIP destroyer = {"Destroyer", false, {0, 0}, {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 2};
 
-SHIP *ships[] = {&carrier, &battleship, &submarine, &cruiser, &destroyer};
+PLAYER player1;
+PLAYER player2;
 
 // Define bit shift and bit mask options for UART data manipulation.
 #define BIT_SHIFT 4
@@ -58,6 +54,11 @@ char temp_char[50];
 // @return void: None
 void game_init(void)
 {
+    init_player(&player1, false);
+    init_player(&player2, true);
+    board_clear(&player1);
+    board_clear(&player2);
+
     currentState = INIT_STATE;
     rotateShip = false;
     pressed = false;
@@ -66,12 +67,11 @@ void game_init(void)
     shipsPlaced = false;
     setMark = false;
     dataCheck = false;
-    
 }
 
 void print_ship(uint8_t ship_num)
 {
-    snprintf(temp_char, 50, "Place %s", ships[ship_num]->name);
+    snprintf(temp_char, 50, "Place %s", player1.ships[ship_num].name);
     graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
 }
 
@@ -95,17 +95,18 @@ void redraw_all_ships()
     for (uint8_t cur_ship = 0; cur_ship < 5; cur_ship++)
     {
         if (ships[cur_ship]->placed)
-            redraw_ship(ships[cur_ship]->coordinates, ships[cur_ship]->length, CONFIG_BTTLESHIP_CLR, true);
+            redraw_ship(player1.ships[cur_ship].coordinates, player1.ships[cur_ship].length, CONFIG_BTTLESHIP_CLR, true);
     }
 }
 
 void draw_invalid_ship(coord *coords_to_draw, uint8_t invalid_starting_at, uint8_t ship_length)
 {
     printf("invalid starting at %d\n", invalid_starting_at);
-    redraw_ship(coords_to_draw, invalid_starting_at, CONFIG_BTTLESHIP_CLR, false);
-    for (uint8_t i=invalid_starting_at; i<ship_length; i++) {
+    redraw_ship(coords_to_draw, invalid_starting_at, GREEN, false);
+    for (uint8_t i = invalid_starting_at; i < ship_length; i++)
+    {
         graphics_drawX(coords_to_draw[i].row, coords_to_draw[i].col, RED);
-    }   
+    }
 }
 
 int8_t prev_row,
@@ -149,11 +150,10 @@ void game_tick(void)
     case NEW_GAME_STATE:
         lcd_fillScreen(CONFIG_BACK_CLR);
         graphics_drawGrid(CONFIG_GRID_CLR);
-        board_clear();
         nav_set_loc(0, 0);
         break;
     case PLACE_SHIPS_STATE:
-        int8_t row, column;
+        int8_t column, row;
         nav_get_loc(&row, &column);
         coord start_coords = {row, column};
         bool checkPlace = false;
@@ -163,19 +163,19 @@ void game_tick(void)
         if ((prev_column != column) || (prev_row != row))
         {
             coord prev_coords = {prev_row, prev_column};
-            get_coordinates(temp_coordinates, prev_coords, ships[placing_ship]->length, !rotateShip);
-            redraw_ship(temp_coordinates, ships[placing_ship]->length, CONFIG_BACK_CLR, true);
+            get_coordinates(temp_coordinates, prev_coords, player1.ships[placing_ship].length, !rotateShip);
+            redraw_ship(temp_coordinates, player1.ships[placing_ship].length, CONFIG_BACK_CLR, true);
             start_coords.row = row;
             start_coords.col = column;
-            get_coordinates(ships[placing_ship]->coordinates, start_coords, ships[placing_ship]->length, !rotateShip);
+            get_coordinates(player1.ships[placing_ship].coordinates, start_coords, player1.ships[placing_ship].length, !rotateShip);
             redraw_all_ships();
-            if (check_coords_free(ships[placing_ship]->coordinates, ships[placing_ship]->length))
+            if (check_coords_free(&player1, player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length))
             {
-                redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, CONFIG_BTTLESHIP_CLR, false);
+                redraw_ship(player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, false);
             }
             else
             {
-                draw_invalid_ship(ships[placing_ship]->coordinates, find_invalid_coord(ships[placing_ship]->coordinates, ships[placing_ship]->length), ships[placing_ship]->length);
+                draw_invalid_ship(player1.ships[placing_ship].coordinates, find_invalid_coord(&player1, player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length), player1.ships[placing_ship].length);
             }
             print_ship(placing_ship);
             prev_column = column;
@@ -185,23 +185,23 @@ void game_tick(void)
         {
             pressed = true;
 
-            get_coordinates(temp_coordinates, start_coords, ships[placing_ship]->length, !rotateShip);
-            redraw_ship(temp_coordinates, ships[placing_ship]->length, CONFIG_BACK_CLR, true);
+            get_coordinates(temp_coordinates, start_coords, player1.ships[placing_ship].length, !rotateShip);
+            redraw_ship(temp_coordinates, player1.ships[placing_ship].length, CONFIG_BACK_CLR, true);
             rotateShip = !rotateShip;
 
             get_coordinates(ships[placing_ship]->coordinates, start_coords, ships[placing_ship]->length, !rotateShip);
-            redraw_ship(ships[placing_ship]->coordinates, ships[placing_ship]->length, CONFIG_BTTLESHIP_CLR, false);
+            redraw_ship(player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, false);
             print_ship(placing_ship);
         }
         else if (!pin_get_level(HW_BTN_A) && !pressed && btns)
         {
             pressed = true;
-            if (all_coords_valid(ships[placing_ship]->coordinates, ships[placing_ship]->length))
+            if (all_coords_valid(&player1, player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length))
             {
-                ships[placing_ship]->placed = true;
+                player1.ships[placing_ship].placed = true;
                 placing_ship++;
-                write_coords(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, placing_ship - 1);
-                redraw_ship(ships[placing_ship - 1]->coordinates, ships[placing_ship]->length, CONFIG_BTTLESHIP_CLR, true);
+                write_coords(&player1, player1.ships[placing_ship - 1].coordinates, player1.ships[placing_ship].length, placing_ship - 1);
+                redraw_ship(player1.ships[placing_ship - 1].coordinates, player1.ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, true);
                 print_ship(placing_ship - 1);
 
                 if (rotateShip)
@@ -213,7 +213,7 @@ void game_tick(void)
                     nav_set_loc(row + 1, column);
                 }
             }
-            print_board();
+            print_board(&player1);
         }
         else if (pressed && !btns)
         {

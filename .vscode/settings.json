@@ -3,7 +3,9 @@
         "tone.h": "c",
         "coord.h": "c",
         "ship.h": "c",
-        "player.h": "c"
+        "player.h": "c",
+        "stdbool.h": "c",
+        "config.h": "c"
     },
     "cmake.sourceDirectory": "C:/Users/cgyat/Desktop/ECEN330_LAB07_F24/lab07"
 }
