@@ -13,7 +13,7 @@ typedef enum shot
     PREVIOUS, // I meant previous as in "we shot this place before, captain"
 } ShotType;
 
-ShotType has_shot_here(PLAYER *player, COORD coordinate);
-ShotType record_in_shots(PLAYER *player, COORD coordinate);
+ShotType has_shot_here(PLAYER *player, coord coordinate);
+ShotType record_in_shots(PLAYER *player, coord coordinate);
 
 #endif /* C48FF4F2_3C91_4E7A_9312_7060C8B7CC04 */

@@ -47,7 +47,7 @@ static bool setMark, dataCheck;
 static uint8_t placing_ship = 0;
 static bool rotateShip, pressed;
 static uint64_t btns;
-COORD temp_coordinates[5];
+coord temp_coordinates[5];
 char temp_char[50];
 
 // Initialize the game variables and logic.
@@ -76,7 +76,7 @@ void print_ship(uint8_t ship_num)
     graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
 }
 
-void redraw_ship(COORD *coord_to_draw, uint8_t num_coords, color_t color, bool filled)
+void redraw_ship(coord *coord_to_draw, uint8_t num_coords, color_t color, bool filled)
 {
     for (int i = 0; i < num_coords; i++)
     {
@@ -100,7 +100,7 @@ void redraw_all_ships(PLAYER *player)
     }
 }
 
-void draw_invalid_ship(COORD *coords_to_draw, uint8_t invalid_starting_at, uint8_t ship_length)
+void draw_invalid_ship(coord *coords_to_draw, uint8_t invalid_starting_at, uint8_t ship_length)
 {
     printf("invalid starting at %d\n", invalid_starting_at);
     redraw_ship(coords_to_draw, invalid_starting_at, GREEN, false);
@@ -168,14 +168,14 @@ void game_tick(void)
     case PLACE_SHIPS_STATE:
         int8_t column, row;
         nav_get_loc(&row, &column);
-        COORD start_coords = {row, column};
+        coord start_coords = {row, column};
         bool checkPlace = false;
         bool dirty = false;
         btns = ~pin_get_in_reg() & HW_BTN_MASK;
         // this is dirty
         if ((prev_column != column) || (prev_row != row))
         {
-            COORD prev_coords = {prev_row, prev_column};
+            coord prev_coords = {prev_row, prev_column};
             get_coordinates(temp_coordinates, prev_coords, player1.ships[placing_ship].length, !rotateShip);
             redraw_ship(temp_coordinates, player1.ships[placing_ship].length, CONFIG_BACK_CLR, true);
             start_coords.row = row;
@@ -236,7 +236,7 @@ void game_tick(void)
     case P2_PLACE_SHIPS_STATE:
         if (true)
         {
-                }
+        }
         else if (false)
         { // 2 people same handheld
         }

@@ -13,12 +13,12 @@ void board_clear(PLAYER *player)
 	mark_count = 0;
 }
 
-int8_t board_get_coord(PLAYER *player, COORD check_coord)
+int8_t board_get_coord(PLAYER *player, coord check_coord)
 {
 	return player->board[check_coord.row][check_coord.col];
 }
 
-void write_coords(PLAYER *player, COORD *coord_to_write, uint8_t num_coords, int8_t ship_num)
+void write_coords(PLAYER *player, coord *coord_to_write, uint8_t num_coords, int8_t ship_num)
 {
 	for (uint8_t i = 0; i <= num_coords; i++)
 	{
@@ -32,7 +32,7 @@ int8_t board_get_vars(PLAYER *player, int8_t r, int8_t c)
 	return player->board[r][c];
 }
 
-bool check_coords_free(PLAYER *player, COORD *coord_to_write, uint8_t num_coords)
+bool check_coords_free(PLAYER *player, coord *coord_to_write, uint8_t num_coords)
 {
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
 	{
@@ -44,12 +44,12 @@ bool check_coords_free(PLAYER *player, COORD *coord_to_write, uint8_t num_coords
 	return true;
 }
 
-int8_t get_ship_num(PLAYER *player, COORD coord_to_check)
+int8_t get_ship_num(PLAYER *player, coord coord_to_check)
 {
 	return player->board[coord_to_check.row][coord_to_check.col];
 }
 
-bool check_coords_within_board(COORD *coord_to_write, uint8_t num_coords)
+bool check_coords_within_board(coord *coord_to_write, uint8_t num_coords)
 {
 	printf("index %d\n", num_coords);
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
@@ -62,7 +62,7 @@ bool check_coords_within_board(COORD *coord_to_write, uint8_t num_coords)
 	return true;
 }
 
-uint8_t find_invalid_coord(PLAYER *player, COORD *coord_to_write, uint8_t num_coords)
+uint8_t find_invalid_coord(PLAYER *player, coord *coord_to_write, uint8_t num_coords)
 {
 	for (uint8_t i = 0; i < num_coords; i++)
 	{
@@ -75,7 +75,7 @@ uint8_t find_invalid_coord(PLAYER *player, COORD *coord_to_write, uint8_t num_co
 	return EMPTY_SPACE;
 }
 
-bool all_coords_valid(PLAYER *player, COORD *coord_to_write, uint8_t num_coords)
+bool all_coords_valid(PLAYER *player, coord *coord_to_write, uint8_t num_coords)
 {
 	return check_coords_within_board(coord_to_write, num_coords) && check_coords_free(player, coord_to_write, num_coords);
 }
