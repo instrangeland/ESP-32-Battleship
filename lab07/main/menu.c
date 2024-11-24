@@ -94,7 +94,6 @@ void menu_tick(void) {
         lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
         break;
     case MENU_START:
-        btns = ~pin_get_in_reg() & HW_BTN_MASK;
         if(!pin_get_level(HW_BTN_SELECT) && !pressed && btns) {
             pressed = true;
             gameType = !gameType;
