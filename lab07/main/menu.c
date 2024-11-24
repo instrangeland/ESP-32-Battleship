@@ -7,10 +7,14 @@
 
 #define MENU_FONT_SIZE 2
 #define MESS_FNT_SIZE 1
-#define MESS_X 20
-#define MESS_Y 110
-#define MESS_X_2 130
-#define MESS_HEAD_X 25
+#define SHIP_X 20
+#define MESS_X_1 110
+#define MESS_X_2 95
+#define MESS_X_3 55
+#define MESS_Y 140
+#define MESS_Y_2 195
+#define MESS_Y_3 160
+#define MESS_HEAD_X 30
 #define MESS_HEAD_Y 10
 
 
@@ -76,16 +80,18 @@ void menu_tick(void) {
         lcd_setFontSize(MENU_FONT_SIZE);
         lcd_drawString(MESS_HEAD_X, MESS_HEAD_Y, "Welcome to Battleship!", CONFIG_MESS_CLR);
         lcd_setFontSize(MESS_FNT_SIZE);
-        lcd_drawString(MESS_X, 35, "              @@@@@@@@@", CONFIG_MESS_CLR);
-        lcd_drawString(MESS_X, 45, "                    __\\_\\__", CONFIG_MESS_CLR);
-        lcd_drawString(MESS_X, 55, "         ___________|_____|___________", CONFIG_MESS_CLR);
-        lcd_drawString(MESS_X, 65, "          \\                         /", CONFIG_MESS_CLR);
-        lcd_drawString(MESS_X, 75, "           \\  O  O  O  O  O  O  O  /", CONFIG_MESS_CLR);
-        lcd_drawString(MESS_X, 85, "^^^^^^^^^^^^\\_____________________/^^^^^^^^^^^", CONFIG_MESS_CLR);
+        lcd_drawString(SHIP_X, 35, "              @@@@@@@@@", CONFIG_MESS_CLR);
+        lcd_drawString(SHIP_X, 45, "                    __\\_\\__", CONFIG_MESS_CLR);
+        lcd_drawString(SHIP_X, 55, "         ___________|_____|___________", CONFIG_MESS_CLR);
+        lcd_drawString(SHIP_X, 65, "          \\                         /", CONFIG_MESS_CLR);
+        lcd_drawString(SHIP_X, 75, "           \\  O  O  O  O  O  O  O  /", CONFIG_MESS_CLR);
+        lcd_drawString(SHIP_X, 85, "^^^^^^^^^^^^\\_____________________/^^^^^^^^^^^", CONFIG_MESS_CLR);
 
-        lcd_setFontSize(MESS_FNT_SIZE);
-        lcd_drawString(MESS_X, MESS_Y, "Press Start to Begin a 1 player game", CONFIG_MESS_CLR);
-        lcd_drawString(MESS_X, MESS_X_2, "Press Select to change game type", CONFIG_MESS_CLR);
+        lcd_drawString(MESS_X_3, MESS_Y_3, "Press Select to Change Player Mode", CONFIG_MESS_CLR);
+
+        lcd_setFontSize(MENU_FONT_SIZE);
+        lcd_drawString(MESS_X_1, MESS_Y, "1 Player", CONFIG_MESS_CLR);
+        lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
         break;
     case MENU_START:
         btns = ~pin_get_in_reg() & HW_BTN_MASK;
@@ -96,18 +102,20 @@ void menu_tick(void) {
             lcd_setFontSize(MENU_FONT_SIZE);
             lcd_drawString(MESS_HEAD_X, MESS_HEAD_Y, "Welcome to Battleship!", CONFIG_MESS_CLR);
             lcd_setFontSize(MESS_FNT_SIZE);
-            lcd_drawString(MESS_X, 35, "              @@@@@@@@@", CONFIG_MESS_CLR);
-            lcd_drawString(MESS_X, 45, "                    __\\_\\__", CONFIG_MESS_CLR);
-            lcd_drawString(MESS_X, 55, "         ___________|_____|___________", CONFIG_MESS_CLR);
-            lcd_drawString(MESS_X, 65, "          \\                         /", CONFIG_MESS_CLR);
-            lcd_drawString(MESS_X, 75, "           \\  O  O  O  O  O  O  O  /", CONFIG_MESS_CLR);
-            lcd_drawString(MESS_X, 85, "^^^^^^^^^^^^\\_____________________/^^^^^^^^^^^", CONFIG_MESS_CLR);
+            lcd_drawString(SHIP_X, 35, "              @@@@@@@@@", CONFIG_MESS_CLR);
+            lcd_drawString(SHIP_X, 45, "                    __\\_\\__", CONFIG_MESS_CLR);
+            lcd_drawString(SHIP_X, 55, "         ___________|_____|___________", CONFIG_MESS_CLR);
+            lcd_drawString(SHIP_X, 65, "          \\                         /", CONFIG_MESS_CLR);
+            lcd_drawString(SHIP_X, 75, "           \\  O  O  O  O  O  O  O  /", CONFIG_MESS_CLR);
+            lcd_drawString(SHIP_X, 85, "^^^^^^^^^^^^\\_____________________/^^^^^^^^^^^", CONFIG_MESS_CLR);
+            lcd_drawString(MESS_X_3, MESS_Y_3, "Press Select to Change Player Mode", CONFIG_MESS_CLR);
+            lcd_setFontSize(MENU_FONT_SIZE);
             if(gameType) {
-                lcd_drawString(MESS_X, MESS_Y, "Press Select to change to a 1 player game", CONFIG_MESS_CLR); 
-                lcd_drawString(MESS_X, MESS_X_2, "Press Start to Begin a 2 player game", CONFIG_MESS_CLR);
+                lcd_drawString(MESS_X_1, MESS_Y, "2 Players", CONFIG_MESS_CLR); 
+                lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
             } else {
-                lcd_drawString(MESS_X, MESS_Y, "Press Select to change to a 2 player game", CONFIG_MESS_CLR);
-                lcd_drawString(MESS_X, MESS_X_2, "Press Start to Begin a 1 player game", CONFIG_MESS_CLR);
+                lcd_drawString(MESS_X_1, MESS_Y, "1 Player", CONFIG_MESS_CLR);
+                lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
             }
         } else if(pressed && !btns) {
             pressed = false;
