@@ -49,7 +49,7 @@ void app_main(void)
 	nav_init(PER_MS);
 
 	com_init();
-	//game_init();
+	// game_init();
 	menu_init();
 
 	// Configure I/O pins for buttons
@@ -65,7 +65,6 @@ void app_main(void)
 	pin_input(HW_BTN_SELECT, true);
 	pin_reset(HW_BTN_START);
 	pin_input(HW_BTN_START, true);
-
 	// Initialize update timer
 	update_timer = xTimerCreate(
 		"update_timer",		   // Text name for the timer.
@@ -96,7 +95,7 @@ void app_main(void)
 		isr_handled_count++;
 
 		menu_tick();
-		//game_tick();
+		// game_tick();
 		nav_tick();
 		t2 = esp_timer_get_time() - t1;
 		if (t2 > tmax)

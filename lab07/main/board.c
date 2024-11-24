@@ -20,7 +20,8 @@ int8_t board_get_coord(PLAYER *player, coord check_coord)
 
 void write_coords(PLAYER *player, coord *coord_to_write, uint8_t num_coords, int8_t ship_num)
 {
-	for (uint8_t i = 0; i <= num_coords; i++)
+	print_coords(coord_to_write, num_coords);
+	for (uint8_t i = 0; i < num_coords; i++)
 	{
 		player->board[coord_to_write[i].row][coord_to_write[i].col] = ship_num;
 	}

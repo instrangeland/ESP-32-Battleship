@@ -68,11 +68,12 @@ void game_init(void)
     shipsPlaced = false;
     setMark = false;
     dataCheck = false;
+    srand(esp_timer_get_time());
 }
 
 void print_ship(uint8_t ship_num)
 {
-    snprintf(temp_char, 50, "Place %s", player1.ships[ship_num].name);
+    snprintf(temp_char, 50, "Place %s (length %d)", player1.ships[ship_num].name, player1.ships[ship_num].length);
     graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
 }
 
@@ -136,6 +137,7 @@ void game_tick(void)
         }
         break;
     case P2_PLACE_SHIPS_STATE:
+
         if (placing_ship > 4)
         {
             lcd_fillScreen(CONFIG_BACK_CLR);
@@ -143,7 +145,6 @@ void game_tick(void)
             currentState = READY_STATE;
             redraw_all_ships(&player2);
             graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
-            currentState = P2_PLACE_SHIPS_STATE;
         }
         break;
     case READY_STATE:
@@ -213,8 +214,8 @@ void game_tick(void)
             {
                 player1.ships[placing_ship].placed = true;
                 placing_ship++;
-                write_coords(&player1, player1.ships[placing_ship - 1].coordinates, player1.ships[placing_ship].length, placing_ship - 1);
-                redraw_ship(player1.ships[placing_ship - 1].coordinates, player1.ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, true);
+                write_coords(&player1, player1.ships[placing_ship - 1].coordinates, player1.ships[placing_ship - 1].length, placing_ship - 1);
+                redraw_ship(player1.ships[placing_ship - 1].coordinates, player1.ships[placing_ship - 1].length, CONFIG_BTTLESHIP_CLR, true);
                 print_ship(placing_ship - 1);
 
                 if (rotateShip)
@@ -234,8 +235,30 @@ void game_tick(void)
         }
         break;
     case P2_PLACE_SHIPS_STATE:
+        printf("in p2 state\n");
         if (true)
         {
+            print_board(&player2);
+            for (placing_ship = 0; placing_ship < 5; placing_ship++)
+            {
+                bool placed = false;
+                while (!placed)
+                {
+                    coord ship_possible = random_coord();
+                    bool direction = RAND_INT(0, 2);
+                    printf("coord: r: %d c: %d dir: %d\n", ship_possible.row, ship_possible.col, direction);
+                    get_coordinates(player2.ships[placing_ship].coordinates, ship_possible, player2.ships[placing_ship].length, !rotateShip);
+                    if (all_coords_valid(&player2, player2.ships[placing_ship].coordinates, player2.ships[placing_ship].length))
+                    {
+                        write_coords(&player2, player2.ships[placing_ship].coordinates, player2.ships[placing_ship].length, placing_ship);
+                        placed = true;
+                        player2.ships[placing_ship].placed = true;
+                    }
+                }
+                print_board(&player2);
+            }
+            printf("done\n");
+            redraw_all_ships(&player2);
         }
         else if (false)
         { // 2 people same handheld

@@ -3,6 +3,7 @@
 #include "ship.h"
 #include "player.h"
 #include "coord.h"
+#include "esp_timer.h"
 extern SHIP *ships[];
 extern PLAYER this_player;
 extern PLAYER other_player;
