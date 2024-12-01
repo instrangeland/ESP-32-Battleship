@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define MAIN_BOARD_HIT 255
+
 // Original time is 40.0E-3f
 #define CONFIG_GAME_TIMER_PERIOD 40.0E-3f
 

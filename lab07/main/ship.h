@@ -16,6 +16,7 @@ typedef struct ship
     coord start_coord;
     coord coordinates[5];
     uint8_t length;
+    uint8_t hits_remaining;
 } SHIP;
 
 void get_coordinates(coord *write_array, coord start_coordinate, uint8_t length, orientation direction);

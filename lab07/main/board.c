@@ -3,6 +3,105 @@
 #include "stdio.h"
 
 static uint16_t mark_count;
+uint16_t bot_probability_board[BOARD_R][BOARD_C];
+
+void bot_probability_clear()
+{
+	for (int8_t r = 0; r < BOARD_R; r++)
+		for (int8_t c = 0; c < BOARD_C; c++)
+			bot_probability_board[r][c] = 0;
+}
+
+// weight variable is (for now) only used for the 3 wide ships to avoid duplicating work. it may be used later to make the ai more likely to shoot at certain types of ships
+
+void bot_calculate_probability(PLAYER *player, uint8_t starting_row, uint8_t num_rows, uint8_t ship_length, uint8_t weight)
+{
+	coord test_coords[5];
+	for (int8_t r = starting_row; r < starting_row + num_rows; r++)
+	{
+		for (int8_t c = 0; c < BOARD_C; c++)
+		{
+
+			coord start_coord = {r, c};
+			if (check_coords_within_board(&start_coord, 1))
+			{
+				get_coordinates(test_coords, start_coord, ship_length, VERTICAL);
+				if (check_coords_within_board(test_coords, ship_length))
+				{
+					if (bot_is_ship_possible(player, test_coords, ship_length))
+					{
+						bot_increment_probability_matrix(test_coords, ship_length, weight);
+					}
+				}
+				get_coordinates(test_coords, start_coord, ship_length, HORIZONTAL);
+				if (check_coords_within_board(test_coords, ship_length))
+				{
+					if (bot_is_ship_possible(player, test_coords, ship_length))
+					{
+						bot_increment_probability_matrix(test_coords, ship_length, weight);
+					}
+				}
+			}
+		}
+	}
+}
+
+coord bot_decide_shot(PLAYER *player)
+{
+	// remove any shots we've already made
+	coord max_location = {255, 255};
+	uint16_t max_probability = 0;
+	for (int8_t r = 0; r < BOARD_R; r++)
+	{
+		for (int8_t c = 0; c < BOARD_C; c++)
+		{
+			if (player->shot_board[r][c] != NOT_TRIED)
+			{
+				bot_probability_board[r][c] = 0;
+			}
+			else if (bot_probability_board[r][c] > max_probability)
+			{
+				max_probability = bot_probability_board[r][c];
+				max_location.row = r;
+				max_location.col = c;
+			}
+		}
+	}
+	return max_location;
+}
+
+void bot_increment_probability_matrix(coord *coords, uint8_t num_coords, uint8_t weight)
+{
+	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
+	{
+		bot_probability_board[coords[ship_num].row][coords[ship_num].col] += weight;
+	}
+}
+
+bool bot_is_ship_possible(PLAYER *player, coord *coords, uint8_t num_coords)
+{
+	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
+	{
+		if (player->shot_board[coords[ship_num].row][coords[ship_num].col] == MISS)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void bot_print_probability_board()
+{
+	for (int8_t r = 0; r < BOARD_R; r++)
+	{
+		for (int8_t c = 0; c < BOARD_C; c++)
+		{
+			printf("%05d ", bot_probability_board[r][c]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
 
 // Clear the board
 void board_clear(PLAYER *player)
@@ -52,7 +151,6 @@ int8_t get_ship_num(PLAYER *player, coord coord_to_check)
 
 bool check_coords_within_board(coord *coord_to_write, uint8_t num_coords)
 {
-	printf("index %d\n", num_coords);
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
 	{
 		if (coord_to_write[ship_num].row >= BOARD_R || coord_to_write[ship_num].col >= BOARD_C)

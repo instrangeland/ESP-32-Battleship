@@ -39,6 +39,8 @@ void graphics_drawX(int8_t r, int8_t c, color_t color);
  */
 void graphics_drawO(int8_t r, int8_t c, color_t color);
 
+void draw_shot(int8_t r, int8_t c, color_t color);
+
 /**
  * @brief Draw a box to highlight the specified location.
  * @param r     Row grid location.

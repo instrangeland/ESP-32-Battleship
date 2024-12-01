@@ -20,6 +20,7 @@ enum GAME_CNTRL_STATE
     PLACE_SHIPS_STATE,
     P2_PLACE_SHIPS_STATE,
     READY_STATE,
+    BOT_DECIDE_STATE,
     PLAY_STATE,
     END_STATE
 };
@@ -40,13 +41,17 @@ PLAYER player2;
 #define BIT_MASK 0x0F
 
 // Define global static variables to manage the game state machine and game logic.
-static enum GAME_CNTRL_STATE currentState;
+uint8_t bot_ship_lengths[] = {3, 4, 5, 2}; /* we start with 3 as that way we can just run it once and double the probabilities,
+                                            instead of calculating for both 3 long ships*/
 static int8_t playerTurn;
 static bool shipsPlaced;
+static enum GAME_CNTRL_STATE currentState;
 static bool setMark, dataCheck;
 static uint8_t placing_ship = 0;
 static bool rotateShip, pressed;
 static uint64_t btns;
+uint8_t bot_current_row = 0;
+uint8_t bot_current_ship_index = 5;
 coord temp_coordinates[5];
 char temp_char[50];
 
@@ -111,6 +116,40 @@ void draw_invalid_ship(coord *coords_to_draw, uint8_t invalid_starting_at, uint8
     }
 }
 
+void draw_hit_board(PLAYER *player_perspective)
+{
+    lcd_fillScreen(CONFIG_BACK_CLR);
+    graphics_drawGrid(CONFIG_GRID_CLR);
+    for (int8_t r = 0; r < BOARD_R; r++)
+    {
+        for (int8_t c = 0; c < BOARD_C; c++)
+        {
+            if (player_perspective->shot_board[r][c] == HIT)
+            {
+                draw_shot(r, c, RED);
+            }
+            if (player_perspective->shot_board[r][c] == MISS)
+            {
+                draw_shot(r, c, WHITE);
+            }
+        }
+    }
+}
+
+void print_hit_board(PLAYER *player_perspective)
+{
+    printf("shot_board\n");
+    for (int8_t r = 0; r < BOARD_R; r++)
+    {
+        for (int8_t c = 0; c < BOARD_C; c++)
+        {
+            printf("%d ", player_perspective->shot_board[r][c]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
 int8_t prev_row,
     prev_column = 5;
 
@@ -137,7 +176,6 @@ void game_tick(void)
         }
         break;
     case P2_PLACE_SHIPS_STATE:
-
         if (placing_ship > 4)
         {
             lcd_fillScreen(CONFIG_BACK_CLR);
@@ -148,6 +186,23 @@ void game_tick(void)
         }
         break;
     case READY_STATE:
+        bot_current_row = 0;
+        bot_current_ship_index = 0;
+        currentState = BOT_DECIDE_STATE;
+        break;
+    case BOT_DECIDE_STATE:
+        if (bot_current_ship_index > 3)
+        {
+            // bot_print_probability_board();
+            coord bot_choice = bot_decide_shot(&player2);
+            snprintf(temp_char, 50, "Bot chose %d, %d\n", bot_choice.row + 1, bot_choice.col + 1);
+            printf(temp_char);
+            graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+            attempt_shot(&player2, &player1, bot_choice);
+            draw_hit_board(&player2);
+            print_hit_board(&player2);
+            currentState = READY_STATE;
+        }
         break;
     case PLAY_STATE:
         break;
@@ -260,13 +315,32 @@ void game_tick(void)
             printf("done\n");
             redraw_all_ships(&player2);
         }
+
         else if (false)
         { // 2 people same handheld
         }
         else if (false)
         { // 2 people diff handheld over uart
         }
+        lcd_fillScreen(CONFIG_BACK_CLR);
+        graphics_drawGrid(CONFIG_GRID_CLR);
+        break;
     case READY_STATE:
+
+        break;
+    case BOT_DECIDE_STATE:
+        if (bot_current_row >= BOARD_R)
+        {
+            bot_current_row = 0;
+            bot_current_ship_index++;
+        }
+        if (bot_current_ship_index > 3)
+            break;
+        if (bot_current_ship_index == 0)
+            bot_calculate_probability(&player2, bot_current_row, 2, bot_ship_lengths[bot_current_ship_index], 2);
+        else
+            bot_calculate_probability(&player2, bot_current_row, 2, bot_ship_lengths[bot_current_ship_index], 1);
+        bot_current_row += 2;
         break;
     case PLAY_STATE:
         break;

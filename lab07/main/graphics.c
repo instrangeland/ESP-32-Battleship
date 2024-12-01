@@ -2,25 +2,24 @@
 #include "graphics.h"
 #include "config.h"
 
-
 #define MESS_FONT_SZ 1
 
-#define MESS_X (LCD_CHAR_W*MESS_FONT_SZ)
-#define MESS_Y (LCD_H-MESS_H)
-#define MESS_W (LCD_W-LCD_CHAR_W*MESS_FONT_SZ*2)
-#define MESS_H (LCD_CHAR_H*MESS_FONT_SZ)
+#define MESS_X (LCD_CHAR_W * MESS_FONT_SZ)
+#define MESS_Y (LCD_H - MESS_H)
+#define MESS_W (LCD_W - LCD_CHAR_W * MESS_FONT_SZ * 2)
+#define MESS_H (LCD_CHAR_H * MESS_FONT_SZ)
 
-#define VIEW_X (LCD_CHAR_W*MESS_FONT_SZ)
+#define VIEW_X (LCD_CHAR_W * MESS_FONT_SZ)
 #define VIEW_Y 0
-#define VIEW_W (LCD_W-LCD_CHAR_W*MESS_FONT_SZ*2)
-#define VIEW_H (LCD_H-MESS_H)
+#define VIEW_W (LCD_W - LCD_CHAR_W * MESS_FONT_SZ * 2)
+#define VIEW_H (LCD_H - MESS_H)
 
 #define GRID_W CONFIG_BOARD_C
 #define GRID_H CONFIG_BOARD_R
 
 // Dimensions in pixels
-#define CELL_W (VIEW_W/GRID_W)
-#define CELL_H (VIEW_H/GRID_H)
+#define CELL_W (VIEW_W / GRID_W)
+#define CELL_H (VIEW_H / GRID_H)
 
 #if CELL_W < 35 || CELL_H < 35
 #define HIGH_MARGIN 2
@@ -31,78 +30,88 @@
 #endif
 
 #if LCD_H < LCD_W
-  #define MARK_SZ (CELL_H - 2*MARK_MARGIN)
+#define MARK_SZ (CELL_H - 2 * MARK_MARGIN)
 #else
-  #define MARK_SZ (CELL_W - 2*MARK_MARGIN)
+#define MARK_SZ (CELL_W - 2 * MARK_MARGIN)
 #endif
 
 void graphics_drawGrid(color_t color)
 {
-	for (int8_t i = 1; i < GRID_W; i++) {
-		lcd_drawVLine(VIEW_X+i*CELL_W, VIEW_Y, VIEW_H, color);
-	}
-	for (int8_t i = 1; i < GRID_H; i++) {
-		lcd_drawHLine(VIEW_X, VIEW_Y+i*CELL_H, VIEW_W, color);
-	}
+  for (int8_t i = 1; i < GRID_W; i++)
+  {
+    lcd_drawVLine(VIEW_X + i * CELL_W, VIEW_Y, VIEW_H, color);
+  }
+  for (int8_t i = 1; i < GRID_H; i++)
+  {
+    lcd_drawHLine(VIEW_X, VIEW_Y + i * CELL_H, VIEW_W, color);
+  }
 }
 
 void graphics_drawMessage(const char *str, color_t color, color_t bg)
 {
-	lcd_fillRect(MESS_X, MESS_Y, MESS_W, MESS_H, bg);
-	lcd_setFontSize(MESS_FONT_SZ);
-	lcd_drawString(MESS_X, MESS_Y, str, color);
+  lcd_fillRect(MESS_X, MESS_Y, MESS_W, MESS_H, bg);
+  lcd_setFontSize(MESS_FONT_SZ);
+  lcd_drawString(MESS_X, MESS_Y, str, color);
 }
 
 void graphics_drawX(int8_t r, int8_t c, color_t color)
 {
-	coord_t xc = VIEW_X + c * CELL_W + CELL_W/2;
-	coord_t yc = VIEW_Y + r * CELL_H + CELL_H/2;
+  coord_t xc = VIEW_X + c * CELL_W + CELL_W / 2;
+  coord_t yc = VIEW_Y + r * CELL_H + CELL_H / 2;
 
-	lcd_drawLine(xc-MARK_SZ/2, yc-MARK_SZ/2, xc+MARK_SZ/2, yc+MARK_SZ/2, color);
-	lcd_drawLine(xc-MARK_SZ/2, yc+MARK_SZ/2, xc+MARK_SZ/2, yc-MARK_SZ/2, color);
+  lcd_drawLine(xc - MARK_SZ / 2, yc - MARK_SZ / 2, xc + MARK_SZ / 2, yc + MARK_SZ / 2, color);
+  lcd_drawLine(xc - MARK_SZ / 2, yc + MARK_SZ / 2, xc + MARK_SZ / 2, yc - MARK_SZ / 2, color);
 }
 
 void graphics_drawO(int8_t r, int8_t c, color_t color)
 {
-	coord_t xc = VIEW_X + c * CELL_W + CELL_W/2;
-	coord_t yc = VIEW_Y + r * CELL_H + CELL_H/2;
+  coord_t xc = VIEW_X + c * CELL_W + CELL_W / 2;
+  coord_t yc = VIEW_Y + r * CELL_H + CELL_H / 2;
 
-	lcd_drawCircle(xc, yc, MARK_SZ/2, color);
+  lcd_drawCircle(xc, yc, MARK_SZ / 2, color);
+}
+
+void draw_shot(int8_t r, int8_t c, color_t color)
+{
+  coord_t xc = VIEW_X + c * CELL_W + CELL_W / 2;
+  coord_t yc = VIEW_Y + r * CELL_H + CELL_H / 2;
+  lcd_fillCircle(xc, yc, MARK_SZ / 2, color);
+  lcd_fillCircle(xc, yc, MARK_SZ / 4, GRAY);
 }
 
 void graphics_drawHighlight(int8_t r, int8_t c, color_t color)
 {
-	coord_t x = VIEW_X + c * CELL_W;
-	coord_t y = VIEW_Y + r * CELL_H;
+  coord_t x = VIEW_X + c * CELL_W;
+  coord_t y = VIEW_Y + r * CELL_H;
 
-	lcd_drawRect(x+HIGH_MARGIN, y+HIGH_MARGIN,
-		CELL_W-2*HIGH_MARGIN+1, CELL_H-2*HIGH_MARGIN+1, color);
+  lcd_drawRect(x + HIGH_MARGIN, y + HIGH_MARGIN,
+               CELL_W - 2 * HIGH_MARGIN + 1, CELL_H - 2 * HIGH_MARGIN + 1, color);
 }
 
 void graphics_filldrawHighlight(int8_t r, int8_t c, color_t color)
 {
-    coord_t x = VIEW_X + c * CELL_W;
-    coord_t y = VIEW_Y + r * CELL_H;
+  coord_t x = VIEW_X + c * CELL_W;
+  coord_t y = VIEW_Y + r * CELL_H;
 
-    // Define the battleship size relative to the cell
-    coord_t ship_w = CELL_W - 2 * HIGH_MARGIN; // Ship width
-    coord_t ship_h = CELL_H / 2;              // Ship height (half the cell height)
+  // Define the battleship size relative to the cell
+  coord_t ship_w = CELL_W - 2 * HIGH_MARGIN; // Ship width
+  coord_t ship_h = CELL_H / 2;               // Ship height (half the cell height)
 
-    // Center the battleship vertically within the cell
-    coord_t ship_x = x + HIGH_MARGIN;
-    coord_t ship_y = y + (CELL_H - ship_h) / 2;
+  // Center the battleship vertically within the cell
+  coord_t ship_x = x + HIGH_MARGIN;
+  coord_t ship_y = y + (CELL_H - ship_h) / 2;
 
-    lcd_fillRect(x+HIGH_MARGIN, y+HIGH_MARGIN, CELL_W-2*HIGH_MARGIN+1, CELL_H-2*HIGH_MARGIN+1, color);
+  lcd_fillRect(x + HIGH_MARGIN, y + HIGH_MARGIN, CELL_W - 2 * HIGH_MARGIN + 1, CELL_H - 2 * HIGH_MARGIN + 1, color);
 
-
-    // Only draw windows if the color is not the background color
-    if (color != CONFIG_BACK_CLR) {
-        coord_t window_size = MARK_MARGIN; // Size of a window
-        for (int i = 0; i < 3; i++) {
-            coord_t wx = ship_x + i * (ship_w / 4) + window_size;
-            coord_t wy = ship_y + ship_h / 2 - window_size / 2;
-            lcd_fillRect(wx, wy, window_size, window_size, WHITE); // Windows in white
-        }
+  // Only draw windows if the color is not the background color
+  if (color != CONFIG_BACK_CLR)
+  {
+    coord_t window_size = MARK_MARGIN; // Size of a window
+    for (int i = 0; i < 3; i++)
+    {
+      coord_t wx = ship_x + i * (ship_w / 4) + window_size;
+      coord_t wy = ship_y + ship_h / 2 - window_size / 2;
+      lcd_fillRect(wx, wy, window_size, window_size, WHITE); // Windows in white
     }
+  }
 }
-

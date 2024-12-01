@@ -7,6 +7,7 @@
 extern SHIP *ships[];
 extern PLAYER this_player;
 extern PLAYER other_player;
+
 // Initialize the game logic.
 void game_init(void);
 

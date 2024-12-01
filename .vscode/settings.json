@@ -1,18 +1,4 @@
 {
-<<<<<<< HEAD
-        "files.associations": {
-                "tone.h": "c",
-                "coord.h": "c",
-                "ship.h": "c",
-                "player.h": "c",
-                "stdbool.h": "c",
-                "config.h": "c",
-                "menu.h": "c",
-                "board.h": "c",
-                "stdint.h": "c",
-        },
-        "cmake.sourceDirectory": "C:/Users/cgyat/Desktop/ECEN330_LAB07_F24/lab07"
-=======
     "files.associations": {
         "tone.h": "c",
         "coord.h": "c",
@@ -22,8 +8,8 @@
         "config.h": "c",
         "menu.h": "c",
         "board.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "stdint.h": "c"
     },
     "cmake.sourceDirectory": "C:/Users/cgyat/Desktop/ECEN330_LAB07_F24/lab07"
->>>>>>> c9afbf7 (Updated menu graphics)
 }
