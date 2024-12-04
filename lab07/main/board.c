@@ -3,7 +3,7 @@
 #include "stdio.h"
 
 static uint16_t mark_count;
-uint16_t bot_probability_board[BOARD_R][BOARD_C];
+uint32_t bot_probability_board[BOARD_R][BOARD_C];
 
 void bot_probability_clear()
 {
@@ -21,7 +21,6 @@ void bot_calculate_probability(PLAYER *player, uint8_t starting_row, uint8_t num
 	{
 		for (int8_t c = 0; c < BOARD_C; c++)
 		{
-
 			coord start_coord = {r, c};
 			if (check_coords_within_board(&start_coord, 1))
 			{
@@ -43,6 +42,35 @@ void bot_calculate_probability(PLAYER *player, uint8_t starting_row, uint8_t num
 				}
 			}
 		}
+	}
+}
+
+void bot_emphasize_previous_hits(PLAYER *player) {
+	for (int8_t r = 0; r < BOARD_R; r++)
+	{
+		for (int8_t c = 0; c < BOARD_C; c++)
+		{
+			if (player->shot_board[r][c] == HIT)
+			{
+				coord coord_to_emphasize = {r,c};
+				bot_emphasize_coordinate(PLAYER, coord_to_emphasize);
+			}
+		}
+	}
+}
+
+void bot_emphasize_coordinate(PLAYER *player, coord coordinate) {
+	if (coordinate.col > 0) {
+		bot_probability_board[coordinate.r][coordinate.col-1] *= HIT_BONUS;
+	}
+	if (coordinate.col < 9) {
+		bot_probability_board[coordinate.r][coordinate.col+1] *= HIT_BONUS;
+	}
+	if (coordinate.row > 0) {
+		bot_probability_board[coordinate.r-1][coordinate.col-1] *= HIT_BONUS;
+	}
+	if (coordinate.row < 9) {
+		bot_probability_board[coordinate.r+1][coordinate.col+1] *= HIT_BONUS;
 	}
 }
 

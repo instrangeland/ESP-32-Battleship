@@ -16,6 +16,10 @@
 void bot_probability_clear();
 
 void bot_calculate_probability(PLAYER *player, uint8_t starting_row, uint8_t num_rows, uint8_t ship_length, uint8_t weight);
+//this goes thru the board and offers incentives to hit cells next to existing hits
+void bot_emphasize_previous_hits(PLAYER *player);
+//this actually does the incentivizing
+void bot_emphasize_coordinate(PLAYER *player, coord coordinate);
 
 coord bot_decide_shot(PLAYER *player);
 // add the current coords to probability matrix (if possible)
