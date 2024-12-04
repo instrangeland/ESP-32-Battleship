@@ -53,7 +53,7 @@ void bot_emphasize_previous_hits(PLAYER *player) {
 			if (player->shot_board[r][c] == HIT)
 			{
 				coord coord_to_emphasize = {r,c};
-				bot_emphasize_coordinate(PLAYER, coord_to_emphasize);
+				bot_emphasize_coordinate(player, coord_to_emphasize);
 			}
 		}
 	}
@@ -61,16 +61,16 @@ void bot_emphasize_previous_hits(PLAYER *player) {
 
 void bot_emphasize_coordinate(PLAYER *player, coord coordinate) {
 	if (coordinate.col > 0) {
-		bot_probability_board[coordinate.r][coordinate.col-1] *= HIT_BONUS;
+		bot_probability_board[coordinate.row][coordinate.col-1] *= HIT_BONUS;
 	}
 	if (coordinate.col < 9) {
-		bot_probability_board[coordinate.r][coordinate.col+1] *= HIT_BONUS;
+		bot_probability_board[coordinate.row][coordinate.col+1] *= HIT_BONUS;
 	}
 	if (coordinate.row > 0) {
-		bot_probability_board[coordinate.r-1][coordinate.col-1] *= HIT_BONUS;
+		bot_probability_board[coordinate.row-1][coordinate.col-1] *= HIT_BONUS;
 	}
 	if (coordinate.row < 9) {
-		bot_probability_board[coordinate.r+1][coordinate.col+1] *= HIT_BONUS;
+		bot_probability_board[coordinate.row+1][coordinate.col+1] *= HIT_BONUS;
 	}
 }
 
@@ -124,7 +124,7 @@ void bot_print_probability_board()
 	{
 		for (int8_t c = 0; c < BOARD_C; c++)
 		{
-			printf("%05d ", bot_probability_board[r][c]);
+			printf("%05ld ", bot_probability_board[r][c]);
 		}
 		printf("\n");
 	}
