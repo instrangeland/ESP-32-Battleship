@@ -187,8 +187,11 @@ void game_tick(void)
         }
         break;
     case READY_STATE:
+        prev_column = -1;
+        prev_row = -1;
         bot_current_row = 0;
         bot_current_ship_index = 0;
+        init_shot_board(&player1);
         currentState = BOT_DECIDE_STATE;
         break;
     case BOT_DECIDE_STATE:
@@ -201,9 +204,11 @@ void game_tick(void)
             printf(temp_char);
             graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
             attempt_shot(&player2, &player1, bot_choice);
-            draw_hit_board(&player2);
-            print_hit_board(&player2);
+            //draw_hit_board(&player2);
+            //print_hit_board(&player2);
             currentState = PLAYER_MARK_STATE;
+            draw_hit_board(&player1);
+            graphics_drawMessage("Your turn: mark a spot", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
         }
         break;
     case PLAYER_MARK_STATE:
@@ -354,14 +359,22 @@ void game_tick(void)
         bot_current_row += 2;
         break;
     case PLAYER_MARK_STATE:
-        if(!placedMark && pin_get_level(HW_BTN_A)){
-            int8_t nav_row, nav_col;
-            nav_get_loc(&nav_row, &nav_col);
-            placedMark = true;
+        int8_t nav_row, nav_col;
+        nav_get_loc(&nav_row, &nav_col);
+        if((prev_column != nav_col) || (prev_row != nav_row)){
+            graphics_drawHighlight(prev_row, prev_column, CONFIG_BACK_CLR);
+            graphics_drawHighlight(nav_row, nav_col, CONFIG_MESS_CLR);
+            prev_column = nav_col;
+            prev_row = nav_row;
+        }
+        if(!placedMark && !pin_get_level(HW_BTN_A)){
             coord mark = {nav_row, nav_col};
-            attempt_shot(&player1, &player2, mark);
-            draw_hit_board(&player1);
-            print_hit_board(&player1);
+            if(get_shot_location(&player1, mark) == NOT_TRIED){
+                attempt_shot(&player1, &player2, mark);
+                draw_hit_board(&player1);
+                print_hit_board(&player1);
+                placedMark = true;
+            }
         }
         break;
     case PLAY_STATE:
