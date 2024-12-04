@@ -45,32 +45,66 @@ void bot_calculate_probability(PLAYER *player, uint8_t starting_row, uint8_t num
 	}
 }
 
-void bot_emphasize_previous_hits(PLAYER *player) {
+void bot_emphasize_previous_hits(PLAYER *player)
+{
 	for (int8_t r = 0; r < BOARD_R; r++)
 	{
 		for (int8_t c = 0; c < BOARD_C; c++)
 		{
 			if (player->shot_board[r][c] == HIT)
 			{
-				coord coord_to_emphasize = {r,c};
+				coord coord_to_emphasize = {r, c};
 				bot_emphasize_coordinate(player, coord_to_emphasize);
 			}
 		}
 	}
 }
 
-void bot_emphasize_coordinate(PLAYER *player, coord coordinate) {
-	if (coordinate.col > 0) {
-		bot_probability_board[coordinate.row][coordinate.col-1] *= HIT_BONUS;
+void bot_emphasize_coordinate(PLAYER *player, coord coordinate)
+{
+	if (coordinate.col > 0)
+	{
+		if (coordinate.col < 9 && player->shot_board[coordinate.row][coordinate.col + 1] == HIT)
+		{
+			bot_probability_board[coordinate.row][coordinate.col - 1] *= HIT_BONUS * LINE_HIT_BONUS;
+		}
+		else
+		{
+			bot_probability_board[coordinate.row][coordinate.col - 1] *= HIT_BONUS;
+		}
 	}
-	if (coordinate.col < 9) {
-		bot_probability_board[coordinate.row][coordinate.col+1] *= HIT_BONUS;
+	if (coordinate.col < 9)
+	{
+		if (coordinate.col > 0 && player->shot_board[coordinate.row][coordinate.col - 1] == HIT)
+		{
+			bot_probability_board[coordinate.row][coordinate.col + 1] *= HIT_BONUS * LINE_HIT_BONUS;
+		}
+		else
+		{
+			bot_probability_board[coordinate.row][coordinate.col + 1] *= HIT_BONUS;
+		}
 	}
-	if (coordinate.row > 0) {
-		bot_probability_board[coordinate.row-1][coordinate.col-1] *= HIT_BONUS;
+	if (coordinate.row > 0)
+	{
+		if (coordinate.col < 9 && player->shot_board[coordinate.row + 1][coordinate.col] == HIT)
+		{
+			bot_probability_board[coordinate.row - 1][coordinate.col] *= HIT_BONUS * LINE_HIT_BONUS;
+		}
+		else
+		{
+			bot_probability_board[coordinate.row - 1][coordinate.col - 1] *= HIT_BONUS;
+		}
 	}
-	if (coordinate.row < 9) {
-		bot_probability_board[coordinate.row+1][coordinate.col+1] *= HIT_BONUS;
+	if (coordinate.row < 9)
+	{
+		if (coordinate.col < 9 && player->shot_board[coordinate.row - 1][coordinate.col] == HIT)
+		{
+			bot_probability_board[coordinate.row + 1][coordinate.col] *= HIT_BONUS * LINE_HIT_BONUS;
+		}
+		else
+		{
+			bot_probability_board[coordinate.row + 1][coordinate.col] *= HIT_BONUS;
+		}
 	}
 }
 
@@ -78,7 +112,7 @@ coord bot_decide_shot(PLAYER *player)
 {
 	// remove any shots we've already made
 	coord max_location = {255, 255};
-	uint16_t max_probability = 0;
+	uint32_t max_probability = 0;
 	for (int8_t r = 0; r < BOARD_R; r++)
 	{
 		for (int8_t c = 0; c < BOARD_C; c++)
