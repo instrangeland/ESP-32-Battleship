@@ -5,6 +5,9 @@
 
 #define MAIN_BOARD_HIT 255
 
+#define PLAYER_1 0
+#define PLAYER_2 1
+
 // Original time is 40.0E-3f
 #define CONFIG_GAME_TIMER_PERIOD 40.0E-3f
 

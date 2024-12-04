@@ -12,12 +12,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+GAME_TYPE game_type;
+
 // Define enums for the game state machine and to manage place ships
 enum GAME_CNTRL_STATE
 {
     INIT_STATE,
     NEW_GAME_STATE,
-    PLACE_SHIPS_STATE,
+    P1_PLACE_SHIPS_STATE,
     P2_PLACE_SHIPS_STATE,
     READY_STATE,
     BOT_DECIDE_STATE,
@@ -53,8 +55,11 @@ static bool rotateShip, pressed;
 static uint64_t btns;
 uint8_t bot_current_row = 0;
 uint8_t bot_current_ship_index = 5;
+bool waiting_for_button_lift = false;
 coord temp_coordinates[5];
 char temp_char[50];
+
+uint8_t current_player = PLAYER_1;
 
 // Initialize the game variables and logic.
 // @param void: None
@@ -77,9 +82,9 @@ void game_init(void)
     srand(esp_timer_get_time());
 }
 
-void print_ship(uint8_t ship_num)
+void print_ship(uint8_t ship_num, PLAYER *player)
 {
-    snprintf(temp_char, 50, "Place %s (length %d)", player1.ships[ship_num].name, player1.ships[ship_num].length);
+    snprintf(temp_char, 50, "Player %d: Place %s (length %d)", current_player+1,player->ships[ship_num].name, player->ships[ship_num].length);
     graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
 }
 
@@ -151,8 +156,121 @@ void print_hit_board(PLAYER *player_perspective)
     printf("\n");
 }
 
+void bot_place_ships()
+{
+    for (placing_ship = 0; placing_ship < 5; placing_ship++)
+    {
+        bool placed = false;
+        while (!placed)
+        {
+            coord ship_possible = random_coord();
+            bool direction = RAND_INT(0, 2);
+            printf("coord: r: %d c: %d dir: %d\n", ship_possible.row, ship_possible.col, direction);
+            get_coordinates(player2.ships[placing_ship].coordinates, ship_possible, player2.ships[placing_ship].length, !rotateShip);
+            if (all_coords_valid(&player2, player2.ships[placing_ship].coordinates, player2.ships[placing_ship].length))
+            {
+                write_coords(&player2, player2.ships[placing_ship].coordinates, player2.ships[placing_ship].length, placing_ship);
+                placed = true;
+                player2.ships[placing_ship].placed = true;
+            }
+        }
+    }
+    printf("done\n");
+}
+
 int8_t prev_row,
     prev_column = 5;
+
+void run_player_place_ships(PLAYER *my_player)
+{
+    int8_t column, row;
+    nav_get_loc(&row, &column);
+    coord start_coords = {row, column};
+    bool checkPlace = false;
+    bool dirty = false;
+    btns = ~pin_get_in_reg() & HW_BTN_MASK;
+    // this is dirty
+    if ((prev_column != column) || (prev_row != row))
+    {
+        coord prev_coords = {prev_row, prev_column};
+        get_coordinates(temp_coordinates, prev_coords, my_player->ships[placing_ship].length, !rotateShip);
+        redraw_ship(temp_coordinates, my_player->ships[placing_ship].length, CONFIG_BACK_CLR, true);
+        start_coords.row = row;
+        start_coords.col = column;
+        get_coordinates(my_player->ships[placing_ship].coordinates, start_coords, my_player->ships[placing_ship].length, !rotateShip);
+        redraw_all_ships(my_player);
+        if (all_coords_valid(my_player, my_player->ships[placing_ship].coordinates, my_player->ships[placing_ship].length))
+        {
+            redraw_ship(my_player->ships[placing_ship].coordinates, my_player->ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, false);
+        }
+        else
+        {
+            draw_invalid_ship(my_player->ships[placing_ship].coordinates, find_invalid_coord(my_player, my_player->ships[placing_ship].coordinates, my_player->ships[placing_ship].length), my_player->ships[placing_ship].length);
+        }
+        print_ship(placing_ship, my_player);
+        prev_column = column;
+        prev_row = row;
+    }
+    else if (!pin_get_level(HW_BTN_B) && !pressed && btns)
+    {
+        pressed = true;
+
+        get_coordinates(temp_coordinates, start_coords, my_player->ships[placing_ship].length, !rotateShip);
+        redraw_ship(temp_coordinates, my_player->ships[placing_ship].length, CONFIG_BACK_CLR, true);
+        rotateShip = !rotateShip;
+
+        get_coordinates(my_player->ships[placing_ship].coordinates, start_coords, my_player->ships[placing_ship].length, !rotateShip);
+        redraw_ship(my_player->ships[placing_ship].coordinates, my_player->ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, false);
+        print_ship(placing_ship, my_player);
+    }
+    else if (!pin_get_level(HW_BTN_A) && !pressed && btns)
+    {
+        pressed = true;
+        if (all_coords_valid(my_player, my_player->ships[placing_ship].coordinates, my_player->ships[placing_ship].length))
+        {
+            my_player->ships[placing_ship].placed = true;
+            placing_ship++;
+            write_coords(my_player, my_player->ships[placing_ship - 1].coordinates, my_player->ships[placing_ship - 1].length, placing_ship - 1);
+            redraw_ship(my_player->ships[placing_ship - 1].coordinates, my_player->ships[placing_ship - 1].length, CONFIG_BTTLESHIP_CLR, true);
+            print_ship(placing_ship - 1, my_player);
+
+            if (rotateShip)
+            {
+                nav_set_loc(row, column + 1);
+            }
+            else
+            {
+                nav_set_loc(row + 1, column);
+            }
+        }
+    }
+    else if ((pressed && pin_get_level(HW_BTN_A) && pin_get_level(HW_BTN_B))) {
+        pressed = false;
+    }
+}
+void run_player_mark(PLAYER *my_player, PLAYER *other_player)
+{
+    snprintf(temp_char, 50, "Player %d: select a shot", current_player+1);
+    //printf(temp_char);
+    graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+    static int8_t nav_row, nav_col;
+    nav_get_loc(&nav_row, &nav_col);
+    graphics_drawHighlight(nav_row, nav_col, CONFIG_MESS_CLR);
+    if (!placedMark && !pin_get_level(HW_BTN_A))
+    {
+        coord mark = {nav_row, nav_col};
+        if (get_shot_location(my_player, mark) == NOT_TRIED)
+        {
+            attempt_shot(my_player, other_player, mark);
+            if (current_player == 0 || ((current_player == 1) && (game_type == TWO_PLAYER_ONE_HANDHELD))) {
+                draw_hit_board(my_player);
+                print_hit_board(my_player);
+            }
+            placedMark = true;
+        }
+
+    }
+}
 
 void game_tick(void)
 {
@@ -162,10 +280,11 @@ void game_tick(void)
         currentState = NEW_GAME_STATE;
         break;
     case NEW_GAME_STATE:
-        currentState = PLACE_SHIPS_STATE;
-        print_ship(0);
+        currentState = P1_PLACE_SHIPS_STATE;
+        placing_ship = 0;
+        print_ship(0, &player1);
         break;
-    case PLACE_SHIPS_STATE:
+    case P1_PLACE_SHIPS_STATE:
         if (placing_ship > 4)
         {
             lcd_fillScreen(CONFIG_BACK_CLR);
@@ -174,6 +293,11 @@ void game_tick(void)
             redraw_all_ships(&player1);
             graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
             currentState = P2_PLACE_SHIPS_STATE;
+            placing_ship = 0;
+            lcd_fillScreen(CONFIG_BACK_CLR);
+            graphics_drawGrid(CONFIG_GRID_CLR);
+            current_player = 1;
+            waiting_for_button_lift = true;
         }
         break;
     case P2_PLACE_SHIPS_STATE:
@@ -182,17 +306,25 @@ void game_tick(void)
             lcd_fillScreen(CONFIG_BACK_CLR);
             graphics_drawGrid(CONFIG_GRID_CLR);
             currentState = READY_STATE;
-            redraw_all_ships(&player2);
+            if (game_type == TWO_PLAYER_ONE_HANDHELD)
+            {
+                redraw_all_ships(&player2);
+            }
             graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+            waiting_for_button_lift = true;
         }
         break;
     case READY_STATE:
-        prev_column = -1;
-        prev_row = -1;
-        bot_current_row = 0;
-        bot_current_ship_index = 0;
-        init_shot_board(&player1);
-        currentState = BOT_DECIDE_STATE;
+        if (pin_get_level(HW_BTN_A)) {
+            prev_column = -1;
+            prev_row = -1;
+            bot_current_row = 0;
+            bot_current_ship_index = 0;
+            current_player = 0;
+            init_shot_board(&player1);
+            init_shot_board(&player2);
+            currentState = PLAYER_MARK_STATE;
+        }
         break;
     case BOT_DECIDE_STATE:
         if (bot_current_ship_index > 3)
@@ -204,20 +336,28 @@ void game_tick(void)
             printf(temp_char);
             graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
             attempt_shot(&player2, &player1, bot_choice);
-            //draw_hit_board(&player2);
-            //print_hit_board(&player2);
             currentState = PLAYER_MARK_STATE;
-            draw_hit_board(&player1);
-            graphics_drawMessage("Your turn: mark a spot", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+            placedMark = true;
         }
         break;
     case PLAYER_MARK_STATE:
-        bot_current_row = 0;
-        bot_current_ship_index = 0;
-        if(placedMark && !pin_get_level(HW_BTN_A)){
-            placedMark = false;
-            graphics_drawMessage("Bot's turn: thinking...", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
-            currentState = BOT_DECIDE_STATE;
+        if (placedMark && pin_get_level(HW_BTN_A))
+        {
+            lcd_fillScreen(CONFIG_BACK_CLR);
+            graphics_drawGrid(CONFIG_GRID_CLR);
+            current_player = !current_player;
+            if (current_player == 0 || ((current_player == 1) && (game_type == TWO_PLAYER_ONE_HANDHELD)))
+            {
+                placedMark = false;
+            }
+            else
+            {
+
+                bot_current_row = 0;
+                bot_current_ship_index = 0;
+                placedMark = false;
+                currentState = BOT_DECIDE_STATE;
+            }
         }
         break;
     case PLAY_STATE:
@@ -237,112 +377,21 @@ void game_tick(void)
         graphics_drawGrid(CONFIG_GRID_CLR);
         nav_set_loc(0, 0);
         break;
-    case PLACE_SHIPS_STATE:
-        int8_t column, row;
-        nav_get_loc(&row, &column);
-        coord start_coords = {row, column};
-        bool checkPlace = false;
-        bool dirty = false;
-        btns = ~pin_get_in_reg() & HW_BTN_MASK;
-        // this is dirty
-        if ((prev_column != column) || (prev_row != row))
-        {
-            coord prev_coords = {prev_row, prev_column};
-            get_coordinates(temp_coordinates, prev_coords, player1.ships[placing_ship].length, !rotateShip);
-            redraw_ship(temp_coordinates, player1.ships[placing_ship].length, CONFIG_BACK_CLR, true);
-            start_coords.row = row;
-            start_coords.col = column;
-            get_coordinates(player1.ships[placing_ship].coordinates, start_coords, player1.ships[placing_ship].length, !rotateShip);
-            redraw_all_ships(&player1);
-            if (check_coords_free(&player1, player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length))
-            {
-                redraw_ship(player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, false);
-            }
-            else
-            {
-                draw_invalid_ship(player1.ships[placing_ship].coordinates, find_invalid_coord(&player1, player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length), player1.ships[placing_ship].length);
-            }
-            print_ship(placing_ship);
-            prev_column = column;
-            prev_row = row;
-        }
-        else if (!pin_get_level(HW_BTN_B) && !pressed && btns)
-        {
-            pressed = true;
-
-            get_coordinates(temp_coordinates, start_coords, player1.ships[placing_ship].length, !rotateShip);
-            redraw_ship(temp_coordinates, player1.ships[placing_ship].length, CONFIG_BACK_CLR, true);
-            rotateShip = !rotateShip;
-
-            get_coordinates(player1.ships[placing_ship].coordinates, start_coords, player1.ships[placing_ship].length, !rotateShip);
-            redraw_ship(player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length, CONFIG_BTTLESHIP_CLR, false);
-            print_ship(placing_ship);
-        }
-        else if (!pin_get_level(HW_BTN_A) && !pressed && btns)
-        {
-            pressed = true;
-            if (all_coords_valid(&player1, player1.ships[placing_ship].coordinates, player1.ships[placing_ship].length))
-            {
-                player1.ships[placing_ship].placed = true;
-                placing_ship++;
-                write_coords(&player1, player1.ships[placing_ship - 1].coordinates, player1.ships[placing_ship - 1].length, placing_ship - 1);
-                redraw_ship(player1.ships[placing_ship - 1].coordinates, player1.ships[placing_ship - 1].length, CONFIG_BTTLESHIP_CLR, true);
-                print_ship(placing_ship - 1);
-
-                if (rotateShip)
-                {
-                    nav_set_loc(row, column + 1);
-                }
-                else
-                {
-                    nav_set_loc(row + 1, column);
-                }
-            }
-            print_board(&player1);
-        }
-        else if (pressed && !btns)
-        {
-            pressed = false; // all released
-        }
+    case P1_PLACE_SHIPS_STATE:
+        run_player_place_ships(&player1);
         break;
     case P2_PLACE_SHIPS_STATE:
-        printf("in p2 state\n");
-        if (true)
+        if (game_type == TWO_PLAYER_ONE_HANDHELD)
         {
-            print_board(&player2);
-            for (placing_ship = 0; placing_ship < 5; placing_ship++)
-            {
-                bool placed = false;
-                while (!placed)
-                {
-                    coord ship_possible = random_coord();
-                    bool direction = RAND_INT(0, 2);
-                    printf("coord: r: %d c: %d dir: %d\n", ship_possible.row, ship_possible.col, direction);
-                    get_coordinates(player2.ships[placing_ship].coordinates, ship_possible, player2.ships[placing_ship].length, !rotateShip);
-                    if (all_coords_valid(&player2, player2.ships[placing_ship].coordinates, player2.ships[placing_ship].length))
-                    {
-                        write_coords(&player2, player2.ships[placing_ship].coordinates, player2.ships[placing_ship].length, placing_ship);
-                        placed = true;
-                        player2.ships[placing_ship].placed = true;
-                    }
-                }
-                print_board(&player2);
-            }
-            printf("done\n");
-            redraw_all_ships(&player2);
+            run_player_place_ships(&player2);
+        }
+        else
+        {
+            bot_place_ships();
         }
 
-        else if (false)
-        { // 2 people same handheld
-        }
-        else if (false)
-        { // 2 people diff handheld over uart
-        }
-        lcd_fillScreen(CONFIG_BACK_CLR);
-        graphics_drawGrid(CONFIG_GRID_CLR);
         break;
     case READY_STATE:
-
         break;
     case BOT_DECIDE_STATE:
         if (bot_current_row >= BOARD_R)
@@ -359,21 +408,20 @@ void game_tick(void)
         bot_current_row += 2;
         break;
     case PLAYER_MARK_STATE:
-        int8_t nav_row, nav_col;
-        nav_get_loc(&nav_row, &nav_col);
-        if((prev_column != nav_col) || (prev_row != nav_row)){
-            graphics_drawHighlight(prev_row, prev_column, CONFIG_BACK_CLR);
-            graphics_drawHighlight(nav_row, nav_col, CONFIG_MESS_CLR);
-            prev_column = nav_col;
-            prev_row = nav_row;
-        }
-        if(!placedMark && !pin_get_level(HW_BTN_A)){
-            coord mark = {nav_row, nav_col};
-            if(get_shot_location(&player1, mark) == NOT_TRIED){
-                attempt_shot(&player1, &player2, mark);
+        if (!placedMark) {
+            lcd_fillScreen(CONFIG_BACK_CLR);
+            graphics_drawGrid(CONFIG_GRID_CLR);
+            if (current_player == PLAYER_1)
+            {
                 draw_hit_board(&player1);
-                print_hit_board(&player1);
-                placedMark = true;
+                graphics_drawMessage("Player 1: mark a spot", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+                run_player_mark(&player1, &player2);
+            }
+            else
+            {
+                draw_hit_board(&player2);
+                graphics_drawMessage("Player 2: mark a spot", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+                run_player_mark(&player2, &player1);
             }
         }
         break;

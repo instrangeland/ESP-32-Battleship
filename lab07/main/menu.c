@@ -4,6 +4,7 @@
 #include "pin.h"
 #include "hw.h"
 #include "game.h"
+#include <stdio.h>
 
 #define MENU_FONT_SIZE 2
 #define MESS_FNT_SIZE 1
@@ -17,7 +18,6 @@
 #define MESS_HEAD_X 30
 #define MESS_HEAD_Y 10
 
-
 enum MENU_STATE
 {
     MENU_INIT,
@@ -27,19 +27,21 @@ enum MENU_STATE
     MENU_IDLE_PLAYER_2
 };
 
+extern GAME_TYPE game_type;
 static enum MENU_STATE menuState;
 static bool pressed, gameType;
 static uint64_t btns;
 
-
-void menu_init(void) {
+void menu_init(void)
+{
     menuState = MENU_INIT;
     pressed = false;
     gameType = false;
     btns = 0;
 }
 
-void menu_tick(void) {
+void menu_tick(void)
+{
     switch (menuState)
     {
     case MENU_INIT:
@@ -49,18 +51,30 @@ void menu_tick(void) {
         menuState = MENU_START;
         break;
     case MENU_START:
-        if(!pin_get_level(HW_BTN_START) && !pressed && btns) {
+        if (!pin_get_level(HW_BTN_START) && !pressed && btns)
+        {
             pressed = true;
-            if(!gameType) {
+            if (!gameType)
+            {
+                game_type = ONE_PLAYER;
                 menuState = MENU_IDLE_PLAYER_1;
                 game_init();
-            } else {
-                menuState = MENU_IDLE_PLAYER_2;
             }
-        } else if(pressed && !btns) {
+            else
+            {
+                game_type = TWO_PLAYER_ONE_HANDHELD;
+                menuState = MENU_IDLE_PLAYER_1;
+                printf("started 2p game");
+                game_init();
+            }
+        }
+        else if (pressed && !btns)
+        {
             pressed = false;
             menuState = MENU_START;
-        } else {
+        }
+        else
+        {
             menuState = MENU_START;
         }
         break;
@@ -72,7 +86,8 @@ void menu_tick(void) {
         break;
     }
 
-    switch (menuState) {
+    switch (menuState)
+    {
     case MENU_INIT:
         break;
     case MENU_MAIN:
@@ -95,7 +110,8 @@ void menu_tick(void) {
         break;
     case MENU_START:
         btns = ~pin_get_in_reg() & HW_BTN_MASK;
-        if(!pin_get_level(HW_BTN_SELECT) && !pressed && btns) {
+        if (!pin_get_level(HW_BTN_SELECT) && !pressed && btns)
+        {
             pressed = true;
             gameType = !gameType;
             lcd_fillScreen(CONFIG_BACK_CLR);
@@ -110,16 +126,21 @@ void menu_tick(void) {
             lcd_drawString(SHIP_X, 85, "^^^^^^^^^^^^\\_____________________/^^^^^^^^^^^", CONFIG_MESS_CLR);
             lcd_drawString(MESS_X_3, MESS_Y_3, "Press Select to Change Player Mode", CONFIG_MESS_CLR);
             lcd_setFontSize(MENU_FONT_SIZE);
-            if(gameType) {
-                lcd_drawString(MESS_X_1, MESS_Y, "2 Players", CONFIG_MESS_CLR); 
+            if (gameType)
+            {
+                lcd_drawString(MESS_X_1, MESS_Y, "2 Players", CONFIG_MESS_CLR);
                 lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
-            } else {
+            }
+            else
+            {
                 lcd_drawString(MESS_X_1, MESS_Y, "1 Player", CONFIG_MESS_CLR);
                 lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
             }
-        } else if(pressed && !btns) {
+        }
+        else if (pressed && !btns)
+        {
             pressed = false;
-        }   
+        }
         break;
     case MENU_IDLE_PLAYER_1:
         game_tick();
@@ -127,8 +148,7 @@ void menu_tick(void) {
     case MENU_IDLE_PLAYER_2:
         break;
     default:
-        break;   
+        break;
     }
+    lcd_writeFrame();
 }
-
-

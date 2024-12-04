@@ -83,7 +83,7 @@ void app_main(void)
 		ESP_LOGE(TAG, "Error starting update timer");
 		return;
 	}
-
+	lcd_frameEnable();
 	// Main game loop
 	uint64_t t1, t2, tmax = 0;		   // For hardware timer values
 	while (pin_get_level(HW_BTN_MENU)) // while MENU button not pressed

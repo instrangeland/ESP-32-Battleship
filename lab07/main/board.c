@@ -227,7 +227,7 @@ uint8_t find_invalid_coord(PLAYER *player, coord *coord_to_write, uint8_t num_co
 {
 	for (uint8_t i = 0; i < num_coords; i++)
 	{
-		if (player->board[coord_to_write[i].row][coord_to_write[i].col] != EMPTY_SPACE)
+		if ((player->board[coord_to_write[i].row][coord_to_write[i].col] != EMPTY_SPACE) || !check_coords_within_board(&coord_to_write[i], 1))
 		{
 			return i;
 		}
