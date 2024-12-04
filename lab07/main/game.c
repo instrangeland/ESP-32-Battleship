@@ -194,6 +194,7 @@ void game_tick(void)
         if (bot_current_ship_index > 3)
         {
             // bot_print_probability_board();
+            bot_emphasize_previous_hits(&player2);
             coord bot_choice = bot_decide_shot(&player2);
             snprintf(temp_char, 50, "Bot chose %d, %d\n", bot_choice.row + 1, bot_choice.col + 1);
             printf(temp_char);
