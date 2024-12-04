@@ -17,6 +17,11 @@ bool test_loss(PLAYER *player)
     return true;
 }
 
+SHOT_TYPE get_shot_location(PLAYER *player, coord check_coord)
+{
+    return player->shot_board[check_coord.row][check_coord.col];
+}
+
 bool attempt_shot(PLAYER *attacking_player, PLAYER *defending_player, coord shot_location)
 {
     if (defending_player->board[shot_location.row][shot_location.col] != EMPTY_SPACE)
