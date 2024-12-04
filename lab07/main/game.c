@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-GAME_TYPE game_type;
+GAME_TYPE game_type = ONE_PLAYER;
 
 // Define enums for the game state machine and to manage place ships
 enum GAME_CNTRL_STATE
@@ -84,7 +84,7 @@ void game_init(void)
 
 void print_ship(uint8_t ship_num, PLAYER *player)
 {
-    snprintf(temp_char, 50, "Player %d: Place %s (length %d)", current_player+1,player->ships[ship_num].name, player->ships[ship_num].length);
+    snprintf(temp_char, 50, "Player %d: Place %s (length %d)", current_player + 1, player->ships[ship_num].name, player->ships[ship_num].length);
     graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
 }
 
@@ -244,14 +244,15 @@ void run_player_place_ships(PLAYER *my_player)
             }
         }
     }
-    else if ((pressed && pin_get_level(HW_BTN_A) && pin_get_level(HW_BTN_B))) {
+    else if ((pressed && pin_get_level(HW_BTN_A) && pin_get_level(HW_BTN_B)))
+    {
         pressed = false;
     }
 }
 void run_player_mark(PLAYER *my_player, PLAYER *other_player)
 {
-    snprintf(temp_char, 50, "Player %d: select a shot", current_player+1);
-    //printf(temp_char);
+    snprintf(temp_char, 50, "Player %d: select a shot", current_player + 1);
+    // printf(temp_char);
     graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
     static int8_t nav_row, nav_col;
     nav_get_loc(&nav_row, &nav_col);
@@ -262,13 +263,13 @@ void run_player_mark(PLAYER *my_player, PLAYER *other_player)
         if (get_shot_location(my_player, mark) == NOT_TRIED)
         {
             attempt_shot(my_player, other_player, mark);
-            if (current_player == 0 || ((current_player == 1) && (game_type == TWO_PLAYER_ONE_HANDHELD))) {
+            if (current_player == 0 || ((current_player == 1) && (game_type == TWO_PLAYER_ONE_HANDHELD)))
+            {
                 draw_hit_board(my_player);
-                print_hit_board(my_player);
+                // print_hit_board(my_player);
             }
             placedMark = true;
         }
-
     }
 }
 
@@ -315,7 +316,8 @@ void game_tick(void)
         }
         break;
     case READY_STATE:
-        if (pin_get_level(HW_BTN_A)) {
+        if (pin_get_level(HW_BTN_A))
+        {
             prev_column = -1;
             prev_row = -1;
             bot_current_row = 0;
@@ -336,6 +338,7 @@ void game_tick(void)
             printf(temp_char);
             graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
             attempt_shot(&player2, &player1, bot_choice);
+            print_hit_board(&player2);
             currentState = PLAYER_MARK_STATE;
             placedMark = true;
         }
@@ -343,6 +346,10 @@ void game_tick(void)
     case PLAYER_MARK_STATE:
         if (placedMark && pin_get_level(HW_BTN_A))
         {
+            if (test_loss(&player1) || test_loss(&player2))
+            {
+                currentState = END_STATE;
+            }
             lcd_fillScreen(CONFIG_BACK_CLR);
             graphics_drawGrid(CONFIG_GRID_CLR);
             current_player = !current_player;
@@ -352,7 +359,6 @@ void game_tick(void)
             }
             else
             {
-
                 bot_current_row = 0;
                 bot_current_ship_index = 0;
                 placedMark = false;
@@ -394,6 +400,7 @@ void game_tick(void)
     case READY_STATE:
         break;
     case BOT_DECIDE_STATE:
+        graphics_drawMessage("Bot is thinking...", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
         if (bot_current_row >= BOARD_R)
         {
             bot_current_row = 0;
@@ -408,7 +415,8 @@ void game_tick(void)
         bot_current_row += 2;
         break;
     case PLAYER_MARK_STATE:
-        if (!placedMark) {
+        if (!placedMark)
+        {
             lcd_fillScreen(CONFIG_BACK_CLR);
             graphics_drawGrid(CONFIG_GRID_CLR);
             if (current_player == PLAYER_1)
@@ -428,6 +436,15 @@ void game_tick(void)
     case PLAY_STATE:
         break;
     case END_STATE:
+        lcd_fillScreen(CONFIG_BACK_CLR);
+        if (test_loss(&player1))
+        {
+            lcd_drawString(0, 0, "Player 2 Wins!\n", BLACK);
+        }
+        else
+        {
+            lcd_drawString(0, 0, "Player 1 Wins!\n", BLACK);
+        }
         break;
     default:
         break;

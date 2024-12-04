@@ -9,7 +9,7 @@
 #define MENU_FONT_SIZE 2
 #define MESS_FNT_SIZE 1
 #define SHIP_X 20
-#define MESS_X_1 110
+#define MESS_X_1 70
 #define MESS_X_2 95
 #define MESS_X_3 55
 #define MESS_Y 140
@@ -23,8 +23,7 @@ enum MENU_STATE
     MENU_INIT,
     MENU_MAIN,
     MENU_START,
-    MENU_IDLE_PLAYER_1,
-    MENU_IDLE_PLAYER_2
+    MENU_IDLE,
 };
 
 extern GAME_TYPE game_type;
@@ -36,8 +35,23 @@ void menu_init(void)
 {
     menuState = MENU_INIT;
     pressed = false;
-    gameType = false;
     btns = 0;
+}
+
+void draw_common_menu_parts()
+{
+    lcd_fillScreen(CONFIG_BACK_CLR);
+    lcd_setFontSize(MENU_FONT_SIZE);
+    lcd_drawString(MESS_HEAD_X, MESS_HEAD_Y, "Welcome to Battleship!", CONFIG_MESS_CLR);
+    lcd_setFontSize(MESS_FNT_SIZE);
+    lcd_drawString(SHIP_X, 35, "              @@@@@@@@@", CONFIG_MESS_CLR);
+    lcd_drawString(SHIP_X, 45, "                    __\\_\\__", CONFIG_MESS_CLR);
+    lcd_drawString(SHIP_X, 55, "         ___________|_____|___________", CONFIG_MESS_CLR);
+    lcd_drawString(SHIP_X, 65, "          \\                         /", CONFIG_MESS_CLR);
+    lcd_drawString(SHIP_X, 75, "           \\  O  O  O  O  O  O  O  /", CONFIG_MESS_CLR);
+    lcd_drawString(SHIP_X, 85, "^^^^^^^^^^^^\\_____________________/^^^^^^^^^^^", CONFIG_MESS_CLR);
+
+    lcd_drawString(MESS_X_3, MESS_Y_3, "Press Select to Change Player Mode", CONFIG_MESS_CLR);
 }
 
 void menu_tick(void)
@@ -54,19 +68,9 @@ void menu_tick(void)
         if (!pin_get_level(HW_BTN_START) && !pressed && btns)
         {
             pressed = true;
-            if (!gameType)
-            {
-                game_type = ONE_PLAYER;
-                menuState = MENU_IDLE_PLAYER_1;
-                game_init();
-            }
-            else
-            {
-                game_type = TWO_PLAYER_ONE_HANDHELD;
-                menuState = MENU_IDLE_PLAYER_1;
-                printf("started 2p game");
-                game_init();
-            }
+            menuState = MENU_IDLE;
+            printf("started 2p game");
+            game_init();
         }
         else if (pressed && !btns)
         {
@@ -78,9 +82,7 @@ void menu_tick(void)
             menuState = MENU_START;
         }
         break;
-    case MENU_IDLE_PLAYER_1:
-        break;
-    case MENU_IDLE_PLAYER_2:
+    case MENU_IDLE:
         break;
     default:
         break;
@@ -91,21 +93,10 @@ void menu_tick(void)
     case MENU_INIT:
         break;
     case MENU_MAIN:
-        lcd_fillScreen(CONFIG_BACK_CLR);
-        lcd_setFontSize(MENU_FONT_SIZE);
-        lcd_drawString(MESS_HEAD_X, MESS_HEAD_Y, "Welcome to Battleship!", CONFIG_MESS_CLR);
-        lcd_setFontSize(MESS_FNT_SIZE);
-        lcd_drawString(SHIP_X, 35, "              @@@@@@@@@", CONFIG_MESS_CLR);
-        lcd_drawString(SHIP_X, 45, "                    __\\_\\__", CONFIG_MESS_CLR);
-        lcd_drawString(SHIP_X, 55, "         ___________|_____|___________", CONFIG_MESS_CLR);
-        lcd_drawString(SHIP_X, 65, "          \\                         /", CONFIG_MESS_CLR);
-        lcd_drawString(SHIP_X, 75, "           \\  O  O  O  O  O  O  O  /", CONFIG_MESS_CLR);
-        lcd_drawString(SHIP_X, 85, "^^^^^^^^^^^^\\_____________________/^^^^^^^^^^^", CONFIG_MESS_CLR);
-
-        lcd_drawString(MESS_X_3, MESS_Y_3, "Press Select to Change Player Mode", CONFIG_MESS_CLR);
+        draw_common_menu_parts();
 
         lcd_setFontSize(MENU_FONT_SIZE);
-        lcd_drawString(MESS_X_1, MESS_Y, "1 Player", CONFIG_MESS_CLR);
+        lcd_drawString(MESS_X_1, MESS_Y, "1 Player - BOT", CONFIG_MESS_CLR);
         lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
         break;
     case MENU_START:
@@ -113,27 +104,26 @@ void menu_tick(void)
         if (!pin_get_level(HW_BTN_SELECT) && !pressed && btns)
         {
             pressed = true;
-            gameType = !gameType;
-            lcd_fillScreen(CONFIG_BACK_CLR);
-            lcd_setFontSize(MENU_FONT_SIZE);
-            lcd_drawString(MESS_HEAD_X, MESS_HEAD_Y, "Welcome to Battleship!", CONFIG_MESS_CLR);
-            lcd_setFontSize(MESS_FNT_SIZE);
-            lcd_drawString(SHIP_X, 35, "              @@@@@@@@@", CONFIG_MESS_CLR);
-            lcd_drawString(SHIP_X, 45, "                    __\\_\\__", CONFIG_MESS_CLR);
-            lcd_drawString(SHIP_X, 55, "         ___________|_____|___________", CONFIG_MESS_CLR);
-            lcd_drawString(SHIP_X, 65, "          \\                         /", CONFIG_MESS_CLR);
-            lcd_drawString(SHIP_X, 75, "           \\  O  O  O  O  O  O  O  /", CONFIG_MESS_CLR);
-            lcd_drawString(SHIP_X, 85, "^^^^^^^^^^^^\\_____________________/^^^^^^^^^^^", CONFIG_MESS_CLR);
-            lcd_drawString(MESS_X_3, MESS_Y_3, "Press Select to Change Player Mode", CONFIG_MESS_CLR);
-            lcd_setFontSize(MENU_FONT_SIZE);
-            if (gameType)
+            game_type++;
+            if (game_type > ONE_PLAYER)
             {
-                lcd_drawString(MESS_X_1, MESS_Y, "2 Players", CONFIG_MESS_CLR);
+                game_type = 0;
+            }
+            draw_common_menu_parts();
+            lcd_setFontSize(MENU_FONT_SIZE);
+            if (game_type == TWO_PLAYER_TWO_HANDHELD)
+            {
+                lcd_drawString(MESS_X_1, MESS_Y, "2 Player - 2 CNTRL", CONFIG_MESS_CLR);
+                lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
+            }
+            else if (game_type == TWO_PLAYER_ONE_HANDHELD)
+            {
+                lcd_drawString(MESS_X_1, MESS_Y, "2 Player - 1 CNTRL", CONFIG_MESS_CLR);
                 lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
             }
             else
             {
-                lcd_drawString(MESS_X_1, MESS_Y, "1 Player", CONFIG_MESS_CLR);
+                lcd_drawString(MESS_X_1, MESS_Y, "1 Player - BOT", CONFIG_MESS_CLR);
                 lcd_drawString(MESS_X_2, MESS_Y_2, "Press Start", CONFIG_MESS_CLR);
             }
         }
@@ -142,10 +132,8 @@ void menu_tick(void)
             pressed = false;
         }
         break;
-    case MENU_IDLE_PLAYER_1:
+    case MENU_IDLE:
         game_tick();
-        break;
-    case MENU_IDLE_PLAYER_2:
         break;
     default:
         break;
