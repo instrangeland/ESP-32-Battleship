@@ -7,6 +7,16 @@ void init_shot_board(PLAYER *player)
             player->shot_board[r][c] = NOT_TRIED;
 }
 
+bool test_loss(PLAYER *player)
+{
+    for (uint8_t ship_num = 0; ship_num < 5; ship_num++)
+    {
+        if (player->ships[ship_num].hits_remaining > 0)
+            return false;
+    }
+    return true;
+}
+
 bool attempt_shot(PLAYER *attacking_player, PLAYER *defending_player, coord shot_location)
 {
     if (defending_player->board[shot_location.row][shot_location.col] != EMPTY_SPACE)

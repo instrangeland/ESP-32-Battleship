@@ -5,7 +5,8 @@
 #include <stdbool.h>
 #include "ship.h"
 
-typedef enum shot_type {
+typedef enum shot_type
+{
     MISS,
     HIT,
     NOT_TRIED,
@@ -20,6 +21,7 @@ typedef struct player
 
 } PLAYER;
 
+bool test_loss(PLAYER *player);
 void init_player(PLAYER *player, bool ai);
 void init_shot_board(PLAYER *player);
 bool attempt_shot(PLAYER *attacking_player, PLAYER *defending_player, coord shot_location);
