@@ -21,6 +21,7 @@ enum GAME_CNTRL_STATE
     P2_PLACE_SHIPS_STATE,
     READY_STATE,
     BOT_DECIDE_STATE,
+    PLAYER_MARK_STATE,
     PLAY_STATE,
     END_STATE
 };
@@ -43,7 +44,7 @@ PLAYER player2;
 // Define global static variables to manage the game state machine and game logic.
 uint8_t bot_ship_lengths[] = {3, 4, 5, 2}; /* we start with 3 as that way we can just run it once and double the probabilities,
                                             instead of calculating for both 3 long ships*/
-static int8_t playerTurn;
+static bool placedMark;
 static bool shipsPlaced;
 static enum GAME_CNTRL_STATE currentState;
 static bool setMark, dataCheck;
@@ -69,7 +70,7 @@ void game_init(void)
     rotateShip = false;
     pressed = false;
     btns = 0;
-    playerTurn = 0;
+    placedMark = false;
     shipsPlaced = false;
     setMark = false;
     dataCheck = false;
@@ -202,7 +203,16 @@ void game_tick(void)
             attempt_shot(&player2, &player1, bot_choice);
             draw_hit_board(&player2);
             print_hit_board(&player2);
-            currentState = READY_STATE;
+            currentState = PLAYER_MARK_STATE;
+        }
+        break;
+    case PLAYER_MARK_STATE:
+        bot_current_row = 0;
+        bot_current_ship_index = 0;
+        if(placedMark && !pin_get_level(HW_BTN_A)){
+            placedMark = false;
+            graphics_drawMessage("Bot's turn: thinking...", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+            currentState = BOT_DECIDE_STATE;
         }
         break;
     case PLAY_STATE:
@@ -342,6 +352,17 @@ void game_tick(void)
         else
             bot_calculate_probability(&player2, bot_current_row, 2, bot_ship_lengths[bot_current_ship_index], 1);
         bot_current_row += 2;
+        break;
+    case PLAYER_MARK_STATE:
+        if(!placedMark && pin_get_level(HW_BTN_A)){
+            int8_t nav_row, nav_col;
+            nav_get_loc(&nav_row, &nav_col);
+            placedMark = true;
+            coord mark = {nav_row, nav_col};
+            attempt_shot(&player1, &player2, mark);
+            draw_hit_board(&player1);
+            print_hit_board(&player1);
+        }
         break;
     case PLAY_STATE:
         break;
