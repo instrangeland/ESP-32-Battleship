@@ -21,6 +21,7 @@ typedef struct player
 
 } PLAYER;
 
+SHOT_TYPE get_shot_location(PLAYER *player, coord check_coord);
 bool test_loss(PLAYER *player);
 void init_player(PLAYER *player, bool ai);
 void init_shot_board(PLAYER *player);
