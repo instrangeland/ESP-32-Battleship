@@ -42,7 +42,7 @@ PLAYER player2;
 
 // Define bit shift and bit mask options for UART data manipulation.
 #define BIT_SHIFT 4
-#define BIT_MASK 0x0F
+#define BIT_MASK 0x80
 
 // Define global static variables to manage the game state machine and game logic.
 uint8_t bot_ship_lengths[] = {3, 4, 5, 2}; /* we start with 3 as that way we can just run it once and double the probabilities,
@@ -59,6 +59,7 @@ uint8_t bot_current_ship_index = 5;
 bool waiting_for_button_lift = false;
 coord temp_coordinates[5];
 char temp_char[50];
+static uint8_t com_data;
 
 coord prev_shot;
 
@@ -82,7 +83,21 @@ void game_init(void)
     shipsPlaced = false;
     setMark = false;
     dataCheck = false;
+    com_data = 0;
     srand(esp_timer_get_time());
+}
+
+void send_ship_data(){
+    
+    if(rotateShip){
+        com_data = (0x01 << 4) | coord_to_int(player1.ships[placing_ship].coordinates[0]);
+        com_write(&com_data, 1);
+    }
+    else{
+        com_data = coord_to_int(player1.ships[placing_ship].coordinates[0]);
+        com_write(&com_data, 1);
+    }
+
 }
 
 void print_ship(uint8_t ship_num, PLAYER *player)
@@ -236,6 +251,7 @@ void run_player_place_ships(PLAYER *my_player)
             write_coords(my_player, my_player->ships[placing_ship - 1].coordinates, my_player->ships[placing_ship - 1].length, placing_ship - 1);
             redraw_ship(my_player->ships[placing_ship - 1].coordinates, my_player->ships[placing_ship - 1].length, CONFIG_BTTLESHIP_CLR, true);
             print_ship(placing_ship - 1, my_player);
+            send_ship_data();
 
             if (rotateShip)
             {
