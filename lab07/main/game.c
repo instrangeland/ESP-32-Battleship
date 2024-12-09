@@ -24,8 +24,9 @@ enum GAME_CNTRL_STATE
     READY_STATE,
     BOT_DECIDE_STATE,
     PLAYER_MARK_STATE,
+    WAIT_RECEIVE_STATE,
     PLAY_STATE,
-    END_STATE
+    END_STATE,
 };
 enum SHIP_TYPE
 {
@@ -58,6 +59,8 @@ uint8_t bot_current_ship_index = 5;
 bool waiting_for_button_lift = false;
 coord temp_coordinates[5];
 char temp_char[50];
+
+coord prev_shot;
 
 uint8_t current_player = PLAYER_1;
 
@@ -263,6 +266,7 @@ void run_player_mark(PLAYER *my_player, PLAYER *other_player)
         if (get_shot_location(my_player, mark) == NOT_TRIED)
         {
             attempt_shot(my_player, other_player, mark);
+            prev_shot = mark;
             if (current_player == 0 || ((current_player == 1) && (game_type == TWO_PLAYER_ONE_HANDHELD)))
             {
                 draw_hit_board(my_player);
@@ -357,6 +361,11 @@ void game_tick(void)
             {
                 placedMark = false;
             }
+            else if (game_type == TWO_PLAYER_TWO_HANDHELD) {
+                uint8_t to_send = coord_to_int(prev_shot);
+                com_write(&to_send, sizeof(uint8_t));
+                currentState = WAIT_RECEIVE_STATE;
+            }
             else
             {
                 bot_current_row = 0;
@@ -364,6 +373,16 @@ void game_tick(void)
                 placedMark = false;
                 currentState = BOT_DECIDE_STATE;
             }
+        }
+        break;
+    case WAIT_RECEIVE_STATE: 
+        uint8_t rec_byte;
+        uint8_t bytes_received = com_read(&rec_byte, sizeof(uint8_t));
+        if (bytes_received) {
+            coord shot = int_to_coord(rec_byte);
+            attempt_shot(&player2, &player1, shot);
+            currentState = PLAYER_MARK_STATE;
+            current_player = 0;
         }
         break;
     case PLAY_STATE:
