@@ -21,6 +21,7 @@ enum GAME_CNTRL_STATE
     NEW_GAME_STATE,
     P1_PLACE_SHIPS_STATE,
     P2_PLACE_SHIPS_STATE,
+    WAIT_SHIP_SEND_STATE,
     READY_STATE,
     BOT_DECIDE_STATE,
     PLAYER_MARK_STATE,
@@ -52,14 +53,15 @@ static bool shipsPlaced;
 static enum GAME_CNTRL_STATE currentState;
 static bool setMark, dataCheck;
 static uint8_t placing_ship = 0;
-static bool rotateShip, pressed;
+static bool rotateShip, rotate2Ship, pressed;
 static uint64_t btns;
 uint8_t bot_current_row = 0;
 uint8_t bot_current_ship_index = 5;
 bool waiting_for_button_lift = false;
 coord temp_coordinates[5];
 char temp_char[50];
-static uint8_t com_data;
+static uint8_t com_data, received_data;
+static uint8_t received_ship_count;
 
 coord prev_shot;
 
@@ -84,6 +86,8 @@ void game_init(void)
     setMark = false;
     dataCheck = false;
     com_data = 0;
+    received_data = 0;
+    received_ship_count = 0;
     srand(esp_timer_get_time());
 }
 
@@ -98,6 +102,20 @@ void send_ship_data(){
         com_write(&com_data, 1);
     }
 
+}
+
+void get_ship_data(){
+    com_read(&received_data, 1);
+    if(received_data != 0){
+        if(received_data & 0x80){
+            rotate2Ship = true;
+        }
+        else{
+            rotate2Ship = false;
+        }
+        player2.ships[received_ship_count].coordinates[0] = int_to_coord(received_data & 0x0F);
+        received_ship_count++;
+    }
 }
 
 void print_ship(uint8_t ship_num, PLAYER *player)
@@ -313,7 +331,11 @@ void game_tick(void)
             currentState = READY_STATE;
             redraw_all_ships(&player1);
             graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
-            currentState = P2_PLACE_SHIPS_STATE;
+            if(game_type == TWO_PLAYER_TWO_HANDHELD){
+                currentState = WAIT_SHIP_SEND_STATE;
+            } else{
+                currentState = P2_PLACE_SHIPS_STATE;
+            }
             placing_ship = 0;
             lcd_fillScreen(CONFIG_BACK_CLR);
             graphics_drawGrid(CONFIG_GRID_CLR);
@@ -333,6 +355,11 @@ void game_tick(void)
             }
             graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
             waiting_for_button_lift = true;
+        }
+        break;
+    case WAIT_SHIP_SEND_STATE:
+        if(received_data != 0){
+            currentState = P1_PLACE_SHIPS_STATE;
         }
         break;
     case READY_STATE:
@@ -431,6 +458,9 @@ void game_tick(void)
             bot_place_ships();
         }
 
+        break;
+    case WAIT_SHIP_SEND_STATE:
+        get_ship_data();
         break;
     case READY_STATE:
         break;
