@@ -10,7 +10,8 @@
         "board.h": "c",
         "stdlib.h": "c",
         "stdint.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "pin.h": "c"
     },
-    "cmake.sourceDirectory": "C:/Users/cgyat/Desktop/ECEN330_LAB07_F24/lab07"
+    "cmake.sourceDirectory": "/fsf/eh574/Documents/ECEN330_LAB07_F24/lab04/main"
 }
