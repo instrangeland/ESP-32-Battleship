@@ -23,11 +23,13 @@ enum GAME_CNTRL_STATE
     NEW_GAME_STATE,
     P1_PLACE_SHIPS_STATE,
     P2_PLACE_SHIPS_STATE,
+    WAIT_SHIP_SEND_STATE,
     READY_STATE,
     BOT_DECIDE_STATE,
     PLAYER_MARK_STATE,
+    WAIT_RECEIVE_STATE,
     PLAY_STATE,
-    END_STATE
+    END_STATE,
 };
 enum SHIP_TYPE
 {
@@ -43,7 +45,7 @@ PLAYER player2;
 
 // Define bit shift and bit mask options for UART data manipulation.
 #define BIT_SHIFT 4
-#define BIT_MASK 0x0F
+#define BIT_MASK 0x80
 
 // Define global static variables to manage the game state machine and game logic.
 uint8_t bot_ship_lengths[] = {3, 4, 5, 2}; /* we start with 3 as that way we can just run it once and double the probabilities,
@@ -53,13 +55,17 @@ static bool shipsPlaced;
 static enum GAME_CNTRL_STATE currentState;
 static bool setMark, dataCheck;
 static uint8_t placing_ship = 0;
-static bool rotateShip, pressed;
+static bool rotateShip, rotate2Ship, pressed;
 static uint64_t btns;
 uint8_t bot_current_row = 0;
 uint8_t bot_current_ship_index = 5;
 bool waiting_for_button_lift = false;
 coord temp_coordinates[5];
 char temp_char[50];
+static uint8_t com_data, received_data;
+static uint8_t received_ship_count;
+
+coord prev_shot;
 
 uint8_t current_player = PLAYER_1;
 
@@ -81,7 +87,37 @@ void game_init(void)
     shipsPlaced = false;
     setMark = false;
     dataCheck = false;
+    com_data = 0;
+    received_data = 0;
+    received_ship_count = 0;
     srand(esp_timer_get_time());
+}
+
+void send_ship_data(){
+    
+    if(rotateShip){
+        com_data = (0x01 << 4) | coord_to_int(player1.ships[placing_ship].coordinates[0]);
+        com_write(&com_data, 1);
+    }
+    else{
+        com_data = coord_to_int(player1.ships[placing_ship].coordinates[0]);
+        com_write(&com_data, 1);
+    }
+
+}
+
+void get_ship_data(){
+    com_read(&received_data, 1);
+    if(received_data != 0){
+        if(received_data & 0x80){
+            rotate2Ship = true;
+        }
+        else{
+            rotate2Ship = false;
+        }
+        player2.ships[received_ship_count].coordinates[0] = int_to_coord(received_data & 0x0F);
+        received_ship_count++;
+    }
 }
 
 void print_ship(uint8_t ship_num, PLAYER *player)
@@ -235,6 +271,7 @@ void run_player_place_ships(PLAYER *my_player)
             write_coords(my_player, my_player->ships[placing_ship - 1].coordinates, my_player->ships[placing_ship - 1].length, placing_ship - 1);
             redraw_ship(my_player->ships[placing_ship - 1].coordinates, my_player->ships[placing_ship - 1].length, CONFIG_BTTLESHIP_CLR, true);
             print_ship(placing_ship - 1, my_player);
+            send_ship_data();
 
             if (rotateShip)
             {
@@ -265,6 +302,7 @@ void run_player_mark(PLAYER *my_player, PLAYER *other_player)
         if (get_shot_location(my_player, mark) == NOT_TRIED)
         {
             attempt_shot(my_player, other_player, mark);
+            prev_shot = mark;
             if (current_player == 0 || ((current_player == 1) && (game_type == TWO_PLAYER_ONE_HANDHELD)))
             {
                 draw_hit_board(my_player);
@@ -296,7 +334,11 @@ void game_tick(void)
             currentState = READY_STATE;
             redraw_all_ships(&player1);
             graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
-            currentState = P2_PLACE_SHIPS_STATE;
+            if(game_type == TWO_PLAYER_TWO_HANDHELD){
+                currentState = WAIT_SHIP_SEND_STATE;
+            } else{
+                currentState = P2_PLACE_SHIPS_STATE;
+            }
             placing_ship = 0;
             lcd_fillScreen(CONFIG_BACK_CLR);
             graphics_drawGrid(CONFIG_GRID_CLR);
@@ -316,6 +358,11 @@ void game_tick(void)
             }
             graphics_drawMessage("All ships placed!!", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
             waiting_for_button_lift = true;
+        }
+        break;
+    case WAIT_SHIP_SEND_STATE:
+        if(received_data != 0){
+            currentState = P1_PLACE_SHIPS_STATE;
         }
         break;
     case READY_STATE:
@@ -371,6 +418,11 @@ void game_tick(void)
                 {
                     placedMark = false;
                 }
+            else if (game_type == TWO_PLAYER_TWO_HANDHELD) {
+                uint8_t to_send = coord_to_int(prev_shot);
+                com_write(&to_send, sizeof(uint8_t));
+                currentState = WAIT_RECEIVE_STATE;
+            }
                 else
                 {
                     bot_current_row = 0;
@@ -387,6 +439,16 @@ void game_tick(void)
                 currentState = BOT_DECIDE_STATE;
                 print_hit_board(&player2);
             }
+        }
+        break;
+    case WAIT_RECEIVE_STATE: 
+        uint8_t rec_byte;
+        uint8_t bytes_received = com_read(&rec_byte, sizeof(uint8_t));
+        if (bytes_received) {
+            coord shot = int_to_coord(rec_byte);
+            attempt_shot(&player2, &player1, shot);
+            currentState = PLAYER_MARK_STATE;
+            current_player = 0;
         }
         break;
     case PLAY_STATE:
@@ -419,6 +481,9 @@ void game_tick(void)
             bot_place_ships();
         }
 
+        break;
+    case WAIT_SHIP_SEND_STATE:
+        get_ship_data();
         break;
     case READY_STATE:
         break;

@@ -13,4 +13,7 @@ coord random_coord();
 
 void print_coords(coord *coordlist, uint8_t length);
 
+uint8_t coord_to_int(coord coord2conv);
+coord int_to_coord(uint8_t num);
+
 #endif /* D03855FB_AC4D_4B64_836C_C376F7966EE5 */
