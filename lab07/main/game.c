@@ -14,6 +14,8 @@
 
 GAME_TYPE game_type = ONE_PLAYER;
 
+#define AI_DEMO 0
+
 // Define enums for the game state machine and to manage place ships
 enum GAME_CNTRL_STATE
 {
@@ -275,6 +277,7 @@ void run_player_mark(PLAYER *my_player, PLAYER *other_player)
 
 void game_tick(void)
 {
+    // printf("state: %d \n", currentState);
     switch (currentState)
     {
     case INIT_STATE:
@@ -338,12 +341,21 @@ void game_tick(void)
             printf(temp_char);
             graphics_drawMessage(temp_char, CONFIG_MESS_CLR, CONFIG_BACK_CLR);
             attempt_shot(&player2, &player1, bot_choice);
-            print_hit_board(&player2);
+
             currentState = PLAYER_MARK_STATE;
+            print_hit_board(&player2);
             placedMark = true;
+        }
+        if (test_loss(&player1) || test_loss(&player2))
+        {
+            currentState = END_STATE;
         }
         break;
     case PLAYER_MARK_STATE:
+        if (AI_DEMO)
+        {
+            placedMark = true;
+        }
         if (placedMark && pin_get_level(HW_BTN_A))
         {
             if (test_loss(&player1) || test_loss(&player2))
@@ -353,16 +365,27 @@ void game_tick(void)
             lcd_fillScreen(CONFIG_BACK_CLR);
             graphics_drawGrid(CONFIG_GRID_CLR);
             current_player = !current_player;
-            if (current_player == 0 || ((current_player == 1) && (game_type == TWO_PLAYER_ONE_HANDHELD)))
+            if (!AI_DEMO)
             {
-                placedMark = false;
+                if (current_player == 0 || ((current_player == 1) && (game_type == TWO_PLAYER_ONE_HANDHELD)))
+                {
+                    placedMark = false;
+                }
+                else
+                {
+                    bot_current_row = 0;
+                    bot_current_ship_index = 0;
+                    placedMark = false;
+                    currentState = BOT_DECIDE_STATE;
+                }
             }
-            else
+            if (AI_DEMO)
             {
                 bot_current_row = 0;
                 bot_current_ship_index = 0;
                 placedMark = false;
                 currentState = BOT_DECIDE_STATE;
+                print_hit_board(&player2);
             }
         }
         break;
@@ -413,6 +436,7 @@ void game_tick(void)
         else
             bot_calculate_probability(&player2, bot_current_row, 2, bot_ship_lengths[bot_current_ship_index], 1);
         bot_current_row += 2;
+        draw_hit_board(&player2);
         break;
     case PLAYER_MARK_STATE:
         if (!placedMark)
@@ -431,11 +455,17 @@ void game_tick(void)
                 graphics_drawMessage("Player 2: mark a spot", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
                 run_player_mark(&player2, &player1);
             }
+            if (AI_DEMO)
+            {
+                draw_hit_board(&player2);
+                graphics_drawMessage("Bot thinking", CONFIG_MESS_CLR, CONFIG_BACK_CLR);
+            }
         }
         break;
     case PLAY_STATE:
         break;
     case END_STATE:
+        lcd_setFontSize(2);
         lcd_fillScreen(CONFIG_BACK_CLR);
         if (test_loss(&player1))
         {
