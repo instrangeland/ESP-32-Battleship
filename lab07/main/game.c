@@ -94,7 +94,6 @@ void game_init(void)
 }
 
 void send_ship_data(){
-    
     if(rotateShip){
         com_data = (0x01 << 4) | coord_to_int(player1.ships[placing_ship].coordinates[0]);
         com_write(&com_data, 1);
@@ -103,7 +102,6 @@ void send_ship_data(){
         com_data = coord_to_int(player1.ships[placing_ship].coordinates[0]);
         com_write(&com_data, 1);
     }
-
 }
 
 void get_ship_data(){
