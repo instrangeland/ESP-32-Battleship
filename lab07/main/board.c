@@ -13,7 +13,7 @@ void bot_probability_clear()
 }
 
 // weight variable is (for now) only used for the 3 wide ships to avoid duplicating work. it may be used later to make the ai more likely to shoot at certain types of ships
-
+// also: the starting row and num_rows are used to distribute this accross several frames. So it will only run a few rows at a time
 void bot_calculate_probability(PLAYER *player, uint8_t starting_row, uint8_t num_rows, uint8_t ship_length, uint8_t weight)
 {
 	coord test_coords[5];
@@ -45,6 +45,7 @@ void bot_calculate_probability(PLAYER *player, uint8_t starting_row, uint8_t num
 	}
 }
 
+// I found it helpful to have it add extra weight to locations around places it already succeeded in hitting something...
 void bot_emphasize_previous_hits(PLAYER *player)
 {
 	for (int8_t r = 0; r < BOARD_R; r++)
@@ -139,7 +140,7 @@ void bot_increment_probability_matrix(coord *coords, uint8_t num_coords, uint8_t
 		bot_probability_board[coords[ship_num].row][coords[ship_num].col] += weight;
 	}
 }
-
+// just check if any of the coordinates of a particular possible ship orientation are impossible
 bool bot_is_ship_possible(PLAYER *player, coord *coords, uint8_t num_coords)
 {
 	for (uint8_t ship_num = 0; ship_num < num_coords; ship_num++)
@@ -152,6 +153,7 @@ bool bot_is_ship_possible(PLAYER *player, coord *coords, uint8_t num_coords)
 	return true;
 }
 
+//just used for debugging the bot. 
 void bot_print_probability_board()
 {
 	for (int8_t r = 0; r < BOARD_R; r++)
@@ -222,7 +224,8 @@ bool check_coords_within_board(coord *coord_to_write, uint8_t num_coords)
 	}
 	return true;
 }
-
+/*this function is used when we have already confirmed that a ship is impossible, either due to going out of bounds or overlapping a previous ship...
+  but to show a nice gui, figure out which location*/ 
 uint8_t find_invalid_coord(PLAYER *player, coord *coord_to_write, uint8_t num_coords)
 {
 	for (uint8_t i = 0; i < num_coords; i++)

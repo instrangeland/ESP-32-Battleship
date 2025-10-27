@@ -1,15 +1,3 @@
-# BYU ECEN 330 Student Template Repository for Game Controller
+For my ECEN-320 class, we were assigned to just "make something cool" for these ESP-32 based handheld game things. I (along with two friends) decided to make battleship. I did all of the AI code, and a majority of the other code, including the UI code. It doesn't build, unfortunately. I released it without a lot of the other libraries it relies on (both stuff written for the class, and some standard libraries for LCD stuff...) I didn't want to include any code that I didn't write myself (given I don't know what licence a lot of this stuff is under).
 
-<!-- ![Build](https://github.com/byu-cpe/ecen330_gc/actions/workflows/ci.yml/badge.svg) -->
-
-
-```
-This software is provided for student assignment use in the Department of
-Electrical and Computer Engineering, Brigham Young University, Utah, USA.
-
-Users agree to not re-host, or redistribute the software, in source or binary
-form, to other persons or other institutions. Users may modify and use the
-source code for personal or educational use.
-
-For questions, contact Scott Lloyd, https://ece.byu.edu/
-```
+Most of the comments are also mine.
